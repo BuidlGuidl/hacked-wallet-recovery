@@ -27,3 +27,10 @@
     bottom: 12px;
     right: 14px;
 }
+
+.buttonContainer button{
+  display: flex;
+
+height: 40px;
+padding: 0px 48px;
+}

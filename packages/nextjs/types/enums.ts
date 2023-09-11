@@ -1,6 +1,5 @@
 export enum BundlingSteps {
   _,
-  HACKED_ADDRESS_INPUT,
   ASSET_SELECTION,
   TX_BUNDLE,
   SIGN_RECOVERY_TXS,

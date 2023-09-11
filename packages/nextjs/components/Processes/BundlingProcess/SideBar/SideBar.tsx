@@ -11,7 +11,7 @@ interface ISideBar {
   hackedAddress: string;
   safeAddress:string;
 }
-export const SideBar = ({ activeStep, hackedAddress, safeAddress }: ISideBar) => {
+export const SideBar = ({ activeStep, hackedAddress }: ISideBar) => {
 
   const reload = () => {
     localStorage.clear();
@@ -30,21 +30,19 @@ export const SideBar = ({ activeStep, hackedAddress, safeAddress }: ISideBar) =>
       </div>
       <div className={`${styles.addresess} bg-base-300`}>
         <div className={`${styles.addressContainer}`}>
-          <span>Safe Address</span>
-          <div className="m-2"></div>
-          <Address address={safeAddress} disableAddressLink={true}></Address>
-        </div>
-        <div className={`${styles.addressContainer}`}>
-          <span>Hacked Address</span>
-          <div className="m-2"></div>
-          <Address address={hackedAddress} disableAddressLink={true}></Address>
-        </div>
-        <Image
+          <div className={`${styles.hackedAddressTitle}`}>
+          <span>Hacked Address</span> 
+          <Image
           src={LogoutSvg}
           alt={""}
-          className={`h-5 w-5 cursor-pointer ${styles.logout}`}
+          className="h-5 w-5 cursor-pointer"
           onClick={() => reload()}
         />
+          </div>
+         
+          <div className="m-2"></div>
+          <Address format={"long"} address={hackedAddress} disableAddressLink={true} ></Address>
+        </div>
       </div>
     </div>
   );

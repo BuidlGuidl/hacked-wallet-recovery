@@ -6,10 +6,15 @@ import { BigNumber, ethers } from "ethers";
 import { useInterval, useLocalStorage } from "usehooks-ts";
 import { v4 } from "uuid";
 import { useAccount, usePublicClient, useWalletClient } from "wagmi";
-import { RecoveryTx } from "~~/types/business";
+import { ERC20Tx, ERC721Tx, ERC1155Tx, RecoveryTx } from "~~/types/business";
 import { RecoveryProcessStatus } from "~~/types/enums";
+import { DUMMY_ADDRESS, ERC20_ABI, ERC721_ABI, ERC1155_ABI } from "~~/utils/constants";
 import { getTargetNetwork } from "~~/utils/scaffold-eth";
 import { BLOCKS_IN_THE_FUTURE } from "~~/utils/constants";
+
+const erc721Interface = new ethers.utils.Interface(ERC721_ABI);
+const erc1155Interface = new ethers.utils.Interface(ERC1155_ABI);
+const erc20Interface = new ethers.utils.Interface(ERC20_ABI);
 
 interface IStartProcessPops {
   safeAddress: string;
@@ -38,7 +43,7 @@ export const useRecoveryProcess = () => {
 
   const { data: walletClient } = useWalletClient();
   const FLASHBOTS_RELAY_ENDPOINT = `https://relay${targetNetwork.network == "goerli" ? "-goerli" : ""}.flashbots.net/`;
-
+  const [unsignedTxs, setUnsignedTxs] = useLocalStorage<RecoveryTx[]>("unsignedTxs", []);
   useEffect(() => {
     (async () => {
       if (!targetNetwork || !targetNetwork.blockExplorers) return;
@@ -66,7 +71,7 @@ export const useRecoveryProcess = () => {
 
       if (blockDelta < 0) {
         showError(
-          `The recovery has failed. Review your 'Secure Wallet' in some minutes, sometimes we can fail waiting but the process finally excutes. If the process has failed, remove all "Hacked Wallet Recovery RPC", clear activity data and try again. Check this <a href="https://youtu.be/G4dg74m_Bmc" target="_blank" rel="noopener noreferrer">video</a>.`,
+          `The recovery has failed. To solve this issue, remove all "Hacked Wallet Recovery RPC" and clear activity data. Check this <a href="https://youtu.be/G4dg74m_Bmc" target="_blank" rel="noopener noreferrer">video</a>`,
           true,
         );
         setSentBlock(0);
@@ -98,7 +103,7 @@ export const useRecoveryProcess = () => {
     if (!address) {
       setStepActive(RecoveryProcessStatus.NO_CONNECTED_ACCOUNT);
       return false;
-    } else if (address != safeAddress) {
+    } else if (address != safeAddress || safeAddress == DUMMY_ADDRESS) {
       setStepActive(RecoveryProcessStatus.NO_SAFE_ACCOUNT);
       return false;
     }
@@ -237,6 +242,78 @@ export const useRecoveryProcess = () => {
     }
   };
 
+  const generateCorrectTransactions = ({
+    transactions,
+    safeAddress,
+    hackedAddress,
+  }: {
+    transactions: RecoveryTx[];
+    safeAddress: string;
+    hackedAddress: string;
+  }): RecoveryTx[] => {
+    return transactions.map(item => {
+      if (item.type === "erc20") {
+        const data = item as ERC20Tx;
+        const newErc20tx: ERC20Tx = {
+          type: data.type,
+          info: data.info,
+          symbol: data.symbol,
+          amount: data.amount,
+          toEstimate: {
+            from: data.toEstimate.from,
+            to: data.toEstimate.to,
+            data: erc20Interface.encodeFunctionData("transfer", [
+              safeAddress,
+              BigNumber.from(data.amount),
+            ]) as `0x${string}`,
+          },
+        };
+        return newErc20tx;
+      }
+
+      if (item.type === "erc721") {
+        const data = item as ERC721Tx;
+        const newErc721Tx: ERC721Tx = {
+          type: data.type,
+          info: data.info,
+          symbol: data.symbol,
+          tokenId: data.tokenId,
+          toEstimate: {
+            from: data.toEstimate.from,
+            to: data.toEstimate.to,
+            data: erc721Interface.encodeFunctionData("transferFrom", [
+              data.toEstimate.from,
+              safeAddress,
+              BigNumber.from(data.tokenId),
+            ]) as `0x${string}`,
+          },
+        };
+        return newErc721Tx;
+      }
+
+      const data = item as ERC1155Tx;
+      const newErc1155Tx: ERC1155Tx = {
+        type: data.type,
+        info: data.info,
+        uri: data.uri,
+        tokenIds: data.tokenIds,
+        amounts: data.amounts,
+        toEstimate: {
+          from: data.toEstimate.from,
+          to: data.toEstimate.to,
+          data: erc1155Interface.encodeFunctionData("safeBatchTransferFrom", [
+            hackedAddress,
+            safeAddress,
+            data.tokenIds,
+            data.amounts,
+            ethers.constants.HashZero,
+          ]) as `0x${string}`,
+        },
+      };
+      return newErc1155Tx;
+    });
+  };
+
   const startRecoveryProcess = async ({
     safeAddress,
     modifyBundleId,
@@ -251,12 +328,14 @@ export const useRecoveryProcess = () => {
     }
     try {
       ////////// Create new bundle uuid & add corresponding RPC 'subnetwork' to Metamask
+      const transformedTransactions = generateCorrectTransactions({ transactions, safeAddress, hackedAddress });
+      setUnsignedTxs(transformedTransactions);
       const bundleId = await changeFlashbotNetwork();
       modifyBundleId(bundleId);
       setStepActive(RecoveryProcessStatus.INCREASE_PRIORITY_FEE);
       // ////////// Cover the envisioned total gas fee from safe account
       await payTheGas(totalGas, hackedAddress);
-      signRecoveryTransactions(hackedAddress, transactions, currentBundleId, true);
+      signRecoveryTransactions(hackedAddress, transformedTransactions, currentBundleId, true);
       return;
     } catch (e) {
       resetStatus();
@@ -306,8 +385,11 @@ export const useRecoveryProcess = () => {
     sentTxHash,
     blockCountdown,
     startRecoveryProcess,
+    validateBundleIsReady,
     signRecoveryTransactions,
     resetStatus,
     showTipsModal,
+    unsignedTxs,
+    setUnsignedTxs,
   };
 };

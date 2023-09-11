@@ -1,6 +1,6 @@
-/* eslint-disable @next/next/no-img-element */
-import ERC20Svg from "../../../../../../public/assets/flashbotRecovery/coin.svg";
 import EmptySvg from "../../../../../../public/assets/flashbotRecovery/empty.svg";
+import ERC20Svg from "../../../../../../public/assets/flashbotRecovery/coin.svg";
+
 import styles from "./autoDetectedAssets.module.css";
 import { motion } from "framer-motion";
 import { RecoveryTx } from "~~/types/business";

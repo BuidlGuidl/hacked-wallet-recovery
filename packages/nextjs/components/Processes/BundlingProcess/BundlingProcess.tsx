@@ -5,7 +5,6 @@ import { motion } from "framer-motion";
 import { useLocalStorage } from "usehooks-ts";
 import { SideBar } from "~~/components/Processes/BundlingProcess/SideBar/SideBar";
 import { AssetSelectionStep } from "~~/components/Processes/BundlingProcess/Steps/AssetSelectionStep/AssetSelectionStep";
-import { HackedAddressStep } from "~~/components/Processes/BundlingProcess/Steps/HackedAddressStep/HackedAddressStep";
 import { TransactionBundleStep } from "~~/components/Processes/BundlingProcess/Steps/TransactionBundleStep/TransactionBundleStep";
 import { IWrappedRecoveryTx } from "~~/hooks/flashbotRecoveryBundle/useAutodetectAssets";
 import { RecoveryTx } from "~~/types/business";
@@ -44,12 +43,12 @@ export const BundlingProcess = ({
   );
 
   const stateTransitionFunctions = {
-    fromHackedAddressInputToAssetSelection: setHackedAddress,
     fromAssetSelectionToHackedAddressInput: () => {
       setIsOnBasket(false);
       setSelectedAssetIndices([]);
       setUnsignedTxs([]);
       setHackedAddress("");
+      localStorage.clear();
     },
     fromAssetSelectionToBundling: (txsToAdd: RecoveryTx[]) => {
       setUnsignedTxs(txsToAdd);
@@ -76,13 +75,8 @@ export const BundlingProcess = ({
 
   return (
     <motion.div className={styles.bundling} initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-      <SideBar activeStep={activeStep} hackedAddress={hackedAddress} safeAddress={safeAddress} />
+      <SideBar activeStep={activeStep} hackedAddress={hackedAddress}/>
       <div className={`${styles.content} bg-base-300`}>
-        <HackedAddressStep
-          isVisible={activeStep === BundlingSteps.HACKED_ADDRESS_INPUT}
-          safeAddress={safeAddress}
-          onSubmit={stateTransitionFunctions.fromHackedAddressInputToAssetSelection}
-        />
         <AssetSelectionStep
           isVisible={activeStep === BundlingSteps.ASSET_SELECTION}
           hackedAddress={hackedAddress}

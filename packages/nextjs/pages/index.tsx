@@ -7,24 +7,21 @@ import { useAccount, useNetwork, usePrepareSendTransaction, useSendTransaction, 
 import { CustomPortal } from "~~/components/CustomPortal/CustomPortal";
 import { MetaHeader } from "~~/components/MetaHeader";
 import { BundlingProcess } from "~~/components/Processes/BundlingProcess/BundlingProcess";
-import { ConnectionProcess } from "~~/components/Processes/ConnectionProcess/ConnectionProcess";
+import { HackedAddressProcess } from "~~/components/Processes/HackedAddressProcess/HackedAddressProcess";
 import { RecoveryProcess } from "~~/components/Processes/RecoveryProcess/RecoveryProcess";
 import { useRecoveryProcess } from "~~/hooks/flashbotRecoveryBundle/useRecoveryProcess";
 import { useShowError } from "~~/hooks/flashbotRecoveryBundle/useShowError";
 import GasSvg from "~~/public/assets/flashbotRecovery/gas-illustration.svg";
-
 import ErrorSvg from "~~/public/assets/flashbotRecovery/error.svg";
 import { BundlingSteps, RecoveryProcessStatus } from "~~/types/enums";
-import { RecoveryTx } from "~~/types/business";
-import { CONTRACT_ADDRESS } from "~~/utils/constants";
+import { CONTRACT_ADDRESS, DUMMY_ADDRESS } from "~~/utils/constants";
+import { getTargetNetwork } from "~~/utils/scaffold-eth";
 import { parseEther } from "viem";
-import { NETWORKS_EXTRA_DATA, getTargetNetwork } from "~~/utils/scaffold-eth";
 
 const Home: NextPage = () => {
   const { isConnected: walletConnected, address: connectedAddress } = useAccount();
-  const [safeAddress, setSafeAddress] = useLocalStorage<string>("toAddress", "");
+  const [safeAddress, setSafeAddress] = useState(DUMMY_ADDRESS);
   const [hackedAddress, setHackedAddress] = useLocalStorage<string>("hackedAddress", "");
-  const [unsignedTxs, setUnsignedTxs] = useLocalStorage<RecoveryTx[]>("unsignedTxs", []);
   const [totalGasEstimate, setTotalGasEstimate] = useState<BigNumber>(BigNumber.from("0"));
   const [isOnBasket, setIsOnBasket] = useState(false);
   const [currentBundleId, setCurrentBundleId] = useLocalStorage<string>("bundleUuid", "");
@@ -40,6 +37,9 @@ const Home: NextPage = () => {
     signRecoveryTransactions,
     blockCountdown,
     showTipsModal,
+    unsignedTxs,
+    setUnsignedTxs,
+    validateBundleIsReady,
   } = useRecoveryProcess();
 
   const [debouncedAmount] = useDebounce(donationValue, 500)
@@ -58,9 +58,10 @@ const Home: NextPage = () => {
   const startSigning = () => {
     signRecoveryTransactions(hackedAddress, unsignedTxs, currentBundleId, false);
   };
-  const startRecovery = () => {
+  const startRecovery = (safe: string) => {
+    setSafeAddress(safe);
     startRecoveryProcess({
-      safeAddress,
+      safeAddress: safe,
       modifyBundleId: setCurrentBundleId,
       totalGas: totalGasEstimate,
       hackedAddress,
@@ -79,13 +80,14 @@ const Home: NextPage = () => {
     if (processStatus !== RecoveryProcessStatus.INITIAL) {
       return BundlingSteps.SIGN_RECOVERY_TXS;
     }
+    //TODO review why disappears
     if (unsignedTxs.length > 0) {
       return BundlingSteps.TX_BUNDLE;
     }
     if (hackedAddress !== "") {
       return BundlingSteps.ASSET_SELECTION;
     }
-    return BundlingSteps.HACKED_ADDRESS_INPUT;
+    return BundlingSteps._;
   };
 
   const cleanApp = () => {
@@ -124,15 +126,10 @@ const Home: NextPage = () => {
           alignItems: "center",
         }}
       >
-        <ConnectionProcess
-          isVisible={!walletConnected}
-          safeAddress={safeAddress}
-          setSafeAddress={setSafeAddress}
-          connectedAddress={connectedAddress}
-        />
+        <HackedAddressProcess isVisible={!hackedAddress} onSubmit={newAddress => setHackedAddress(newAddress)} />
 
         <BundlingProcess
-          isVisible={walletConnected}
+          isVisible={!!hackedAddress}
           activeStep={getActiveStep()}
           hackedAddress={hackedAddress}
           safeAddress={safeAddress}
@@ -142,7 +139,7 @@ const Home: NextPage = () => {
           setUnsignedTxs={setUnsignedTxs}
           setIsOnBasket={setIsOnBasket}
           setTotalGasEstimate={setTotalGasEstimate}
-          startRecovery={startRecovery}
+          startRecovery={() => validateBundleIsReady("")}
         />
 
         <RecoveryProcess
@@ -153,21 +150,28 @@ const Home: NextPage = () => {
           finishProcess={() => finishProcess()}
           startSigning={startSigning}
           showTipsModal={showTipsModal}
-          startProcess={startRecovery}
+          startProcess={add => startRecovery(add)}
           blockCountdown={blockCountdown}
           connectedAddress={connectedAddress}
           safeAddress={safeAddress}
           hackedAddress={hackedAddress}
         />
         
-        {error != "" ? (
+        {isFinalProcessError && error != "" ? (
+          <CustomPortal
+            close={() => resetError()}
+            title={"Something wrong has happend"}
+            description={error}
+            image={GasSvg}
+          />
+        ) : error != "" ? (
           <CustomPortal
             close={() => resetError()}
             title={"Something wrong has happend"}
             description={error}
             image={isFinalProcessError ? GasSvg:ErrorSvg}
           />
-        ) : <></>}
+        ):<></>}
       </div>
     </>
   );

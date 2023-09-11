@@ -3,6 +3,7 @@ export const BLOCKS_IN_THE_FUTURE: { [i: number]: number } = {
   1: 20,
   5: 30,
 };
+export const DUMMY_ADDRESS = "0x23E86852dA9516441E27D5CE06faac360D34d5Ac"
 
 export const ERC721_ABI = [
   {

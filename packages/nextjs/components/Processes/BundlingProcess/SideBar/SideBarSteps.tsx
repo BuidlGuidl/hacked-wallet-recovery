@@ -9,12 +9,6 @@ export const SideBarSteps = ({ activeStep }: ISideBar) => {
   return (
     <div className={styles.steps}>
       <SideBarStepInfo
-        index={BundlingSteps.HACKED_ADDRESS_INPUT}
-        activeStep={activeStep}
-        title={"Provide the Hacked Address"}
-        description={"Provide the address that was hacked so we can search for your assets."}
-      />
-      <SideBarStepInfo
         index={BundlingSteps.ASSET_SELECTION}
         activeStep={activeStep}
         title={"Choose your assets"}

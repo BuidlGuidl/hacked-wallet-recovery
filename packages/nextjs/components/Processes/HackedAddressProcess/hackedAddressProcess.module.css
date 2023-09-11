@@ -1,0 +1,62 @@
+.container {
+  width: 90%;
+  margin-bottom: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  max-width: 458px;
+}
+
+.label {
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 600;
+  line-height: normal;
+  margin-bottom: 12px;
+}
+.container > div {
+  border-radius: 4px;
+  padding: 4px;
+  width: 100%;
+}
+
+.container > div > input {
+  border-radius: 0px;
+}
+.container > div > input::placeholder {
+  color: #58688a;
+  opacity: 1;
+}
+.container > div > input:not(:active) {
+  background-color: transparent;
+}
+.title {
+  text-align: center;
+  font-size: 24px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: 32px;
+}
+.illustration {
+  width: 100px;
+  height: 100px;
+  margin: 40px 0;
+}
+.text {
+  font-size: 18px;
+  font-style: normal;
+  font-weight: 400;
+  font-size: 18px;
+  line-height: 32px;
+  text-align: center;
+}
+.buttonContainer button {
+  display: flex;
+
+  height: 40px;
+  padding: 0px 48px;
+}
+.buttonContainer > div > div > div {
+  display: none;
+}
