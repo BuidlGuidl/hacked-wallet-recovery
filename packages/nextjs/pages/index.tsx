@@ -75,9 +75,6 @@ const Home: NextPage = () => {
   return (
     <>
       <MetaHeader />
-
-      <CustomHeader isVisible={!walletConnected} />
-
       <div
         style={{
           display: "flex",
