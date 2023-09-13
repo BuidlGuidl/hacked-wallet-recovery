@@ -6,13 +6,16 @@ import { InputBase } from "~~/components/scaffold-eth";
 import { useShowError } from "~~/hooks/flashbotRecoveryBundle/useShowError";
 import ClockSvg from "~~/public/assets/flashbotRecovery/clock.svg";
 import HackedWalletSvg from "~~/public/assets/flashbotRecovery/hacked.svg";
-import LogoSvg from "~~/public/assets/flashbotRecovery/logo.svg";
+import MultiSignSvg from "~~/public/assets/flashbotRecovery/multiple-sign-illustration.svg";
+import SignSvg from "~~/public/assets/flashbotRecovery/sign-illustration.svg";
 import SafeWalletSvg from "~~/public/assets/flashbotRecovery/safe.svg";
 import SuccessSvg from "~~/public/assets/flashbotRecovery/success.svg";
 import TelegramSvg from "~~/public/assets/flashbotRecovery/telegram.svg";
 import TipsSvg from "~~/public/assets/flashbotRecovery/tips.svg";
 import TwitterSvg from "~~/public/assets/flashbotRecovery/twitter.svg";
-import VideoSvg from "~~/public/assets/flashbotRecovery/video.svg";
+import ErrorSvg from "~~/public/assets/flashbotRecovery/error.svg";
+import SwitchNetworkSvg from "~~/public/assets/flashbotRecovery/network-change.svg";
+
 import { RecoveryProcessStatus } from "~~/types/enums";
 
 interface IProps {
@@ -58,11 +61,10 @@ export const RecoveryProcess = ({
       <CustomPortal
         title={"Clear cache"}
         description={
-          "We've encountered an issue due to outdated cached data. Please clear your app's cache to resolve this error."
+          "We've encountered an issue due to outdated cached data. To solve this error clean your wallet, remove all Flashbot Personal RPC and clear activity data"
         }
-        image={VideoSvg}
+        image={ErrorSvg}
       />
-      //TODO provide clear data mechanism
     );
   }
 
@@ -88,7 +90,7 @@ export const RecoveryProcess = ({
       <CustomPortal
         title={"Switching Network"}
         description={"Allow us to create and switch to your personal RPC network to prepare the transaction bundle"}
-        image={VideoSvg}
+        image={SwitchNetworkSvg}
       />
     );
   }
@@ -96,11 +98,11 @@ export const RecoveryProcess = ({
   if (recoveryStatus == RecoveryProcessStatus.INCREASE_PRIORITY_FEE) {
     return (
       <CustomPortal
-        title={"Increase the gas"}
+        title={"The Funding Transaction"}
         description={
-          "We recommend set a hight gas to ensure a successful asset recovery. Your increased gas allocation will facilitate the seamless completion of the transaction."
+          "Sign the transaction to found the hacked account with enought founds to send all the transactions in the recovery process, in this way your founds will be the minimun time posible in the hacked account."
         }
-        image={VideoSvg}
+        image={SignSvg}
       />
     );
   }
@@ -133,7 +135,7 @@ export const RecoveryProcess = ({
         description={
           "Each bundled transaction requires your individual signature to verify and complete the asset recovery process. Please sign each transaction as they appear."
         }
-        image={LogoSvg}
+        image={MultiSignSvg}
       />
     );
   }
