@@ -16,7 +16,7 @@ export const SideBar = ({ activeStep, safeAddress, hackedAddress }: ISideBar) =>
       <div className={styles.sidebarContent}>
         <div className={styles.logoContainer}>
           <Image className={styles.logo} src={LogoSvg} alt="" />
-          Hacked Wallet Recovery
+          <h1 className={styles.title} >Hacked Wallet Recovery</h1>
         </div>
         <SideBarSteps activeStep={activeStep} />
       </div>

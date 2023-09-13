@@ -27,7 +27,7 @@
 }
 .steps {
   margin-top: 48px;
-  margin-right: 63px;
+  margin-right: 43px;
   position: relative;
 }
 .step {
@@ -49,6 +49,11 @@
 }
 .stepContainer {
   margin-left: 16px;
+}
+.title{
+  width: 180px;
+  margin: 0;
+  line-height: 28px;
 }
 .stepTitle {
   font-size: 18px;

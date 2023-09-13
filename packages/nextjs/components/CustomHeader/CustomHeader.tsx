@@ -15,7 +15,7 @@ export const CustomHeader = ({ isVisible }: IProps) => {
     <div className={styles.header}>
       <div className={styles.logoContainer}>
         <Image className={styles.logo} src={LogoSvg} alt="" />
-        Hacked Wallet Recovery
+        <h1 className={styles.title} >Hacked Wallet Recovery</h1>
       </div>
     </div>
   );
