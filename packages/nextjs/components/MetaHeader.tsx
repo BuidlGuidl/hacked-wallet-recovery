@@ -15,8 +15,8 @@ const baseUrl = process.env.NEXT_PUBLIC_VERCEL_URL ? `https://${process.env.NEXT
 
 export const MetaHeader = ({
   //TODO Modify after find an app name
-  title = "Flashbot Bundler for Recoveries",
-  description = "I've successfully recovered my hacked assets using this powerful tool. #AssetRecovery",
+  title = "Hacked Wallet Recovery",
+  description = "I've successfully recovered my hacked assets using this powerful tool. #hackedwallet #BuidlGuidl",
   image = "thumbnail.jpg",
   twitterCard = "summary_large_image",
   children,
