@@ -1,3 +1,6 @@
-<svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
-<rect width="64" height="64" rx="8" fill="#77839A" fill-opacity="0.2"/>
+<svg width="73" height="65" viewBox="0 0 73 65" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M38.5 29.9214C38.5 26.6077 41.1863 23.9214 44.5 23.9214H70.5V41.9165H44.5C41.1863 41.9165 38.5 39.2302 38.5 35.9165V29.9214Z" stroke="white" stroke-width="4"/>
+<circle cx="47.5" cy="32.9189" r="3.5" fill="#2AB5F0"/>
+<path d="M10.5 29.9025V18.4189V14.9189C10.5 8.29153 15.8726 2.91895 22.5 2.91895H58.5C65.1274 2.91895 70.5 8.29153 70.5 14.9189V50.9189C70.5 57.5464 65.1274 62.9189 58.5 62.9189H22.5C15.8726 62.9189 10.5 57.5464 10.5 50.9189V50.4189L10.5 38.9165" stroke="white" stroke-width="4"/>
+<path d="M19 21.8208L11.2071 29.6137C10.8166 30.0042 10.1834 30.0042 9.79289 29.6137L2 21.8208" stroke="white" stroke-width="4" stroke-linecap="round"/>
 </svg>
