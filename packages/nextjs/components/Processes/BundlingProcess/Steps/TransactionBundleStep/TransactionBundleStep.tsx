@@ -8,6 +8,7 @@ import { useInterval } from "usehooks-ts";
 import { CustomButton } from "~~/components/CustomButton/CustomButton";
 import { TransactionItem } from "~~/components/Processes/BundlingProcess/Steps/TransactionBundleStep/TransactionItem";
 import { useGasEstimation } from "~~/hooks/flashbotRecoveryBundle/useGasEstimation";
+import BackSvg from "~~/public/assets/flashbotRecovery/back.svg";
 import { RecoveryTx } from "~~/types/business";
 
 interface IProps {
@@ -16,7 +17,7 @@ interface IProps {
   transactions: RecoveryTx[];
   onBack: () => void;
   modifyTransactions: Dispatch<SetStateAction<RecoveryTx[]>>;
-  onSubmit: (val: BigNumber) => void;
+  onSubmit: () => void;
   totalGasEstimate: BigNumber;
   setTotalGasEstimate: Dispatch<SetStateAction<BigNumber>>;
 }
@@ -79,7 +80,10 @@ export const TransactionBundleStep = ({
           <Image height={20} width={20} src={GasSvg} alt="" />
         </div>
         <div className="m-4" />
-        <h2 className={styles.title}>Your transactions</h2>
+        <div className="flex items-center justify-center">
+          <Image src={BackSvg} alt={""} style={{ marginRight: 400 }} className="h-5 w-5 absolute" onClick={onBack} />
+          <h2 className={styles.title}>Your transactions</h2>
+        </div>
         <div className={styles.assetList}>
           {transactions.map((item, i) => (
             <TransactionItem key={i} onDelete={() => removeUnsignedTx(i)} tx={item} />
@@ -88,10 +92,7 @@ export const TransactionBundleStep = ({
         <span className={styles.clear} onClick={clear}>
           Clear all
         </span>
-        <div className="m-4" />
-        <CustomButton type="btn-accent" text={"Back to Assets"} onClick={onBack} />
-        <div className="m-2" />
-        <CustomButton type="btn-primary" text={"Start Signing"} onClick={() => onSubmit(totalGasEstimate)} />
+        <CustomButton type="btn-primary" text={"Start Signing"} onClick={() => onSubmit()} />
       </div>
     </motion.div>
   );
