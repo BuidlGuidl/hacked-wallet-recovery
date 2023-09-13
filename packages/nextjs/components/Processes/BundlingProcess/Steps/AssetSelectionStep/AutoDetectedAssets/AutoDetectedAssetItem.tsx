@@ -1,5 +1,7 @@
 import Image from "next/image";
-import LogoSvg from "../../../../../../public/assets/flashbotRecovery/logo.svg";
+import EmptySvg from "../../../../../../public/assets/flashbotRecovery/empty.svg";
+import ERC20Svg from "../../../../../../public/assets/flashbotRecovery/coin.svg";
+
 import styles from "./autoDetectedAssets.module.css";
 import { motion } from "framer-motion";
 import { RecoveryTx } from "~~/types/business";
@@ -26,7 +28,7 @@ export const AutoDetectedAssetItem = ({ onClick, isSelected, tx, isLoading, imag
     }
     if (tx.type === "erc20") {
       //@ts-ignore
-      return tx.value;
+      return tx.amount;
     }
     if (tx.type === "custom") {
       //@ts-ignore
@@ -58,7 +60,8 @@ export const AutoDetectedAssetItem = ({ onClick, isSelected, tx, isLoading, imag
       className={`${isSelected ? "bg-base-200" : ""} ${styles.assetItem}  ${isLoading ? styles.loading : ""}`}
     >
       <div className={`${styles.logoContainer}`}>
-        <Image className={styles.logo} width={60} height={60} src={image ?? LogoSvg} alt="" />
+        <Image className={styles.logo} width={60} height={60} src={image ? image : tx?.type === "erc20" ? ERC20Svg : EmptySvg} alt="" />
+        {tx?.type === "erc20" ? <span className={styles.coinTitle}>ERC20</span> : ""}
       </div>
       <div className={`${styles.data}`}>
         <h3>{getTitle()}</h3>

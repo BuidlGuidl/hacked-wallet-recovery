@@ -32,6 +32,13 @@
   flex-direction: column;
   justify-content: center;
   margin-left: 16px;
+  position: relative;
+}
+.coinTitle{
+  position: absolute;
+  top: 40px;
+  left: 14px;
+  font-size: 10px;
 }
 
 .loader {
