@@ -8,10 +8,9 @@ import LogoutSvg from "~~/public/assets/flashbotRecovery/logout.svg";
 
 interface ISideBar {
   activeStep: BundlingSteps;
-  safeAddress: string;
   hackedAddress: string;
 }
-export const SideBar = ({ activeStep, safeAddress, hackedAddress }: ISideBar) => {
+export const SideBar = ({ activeStep, hackedAddress }: ISideBar) => {
 
   const reload = () => {
     localStorage.clear();
@@ -26,6 +25,7 @@ export const SideBar = ({ activeStep, safeAddress, hackedAddress }: ISideBar) =>
           <h1 className={styles.title} >Hacked Wallet Recovery</h1>
         </div>
         <SideBarSteps activeStep={activeStep} />
+        <div className="mt-4"></div>
       </div>
       <div className={`${styles.addresess} bg-base-300`}>
         <div className={`${styles.addressContainer}`}>

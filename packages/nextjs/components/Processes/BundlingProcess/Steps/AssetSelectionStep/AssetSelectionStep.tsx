@@ -97,20 +97,18 @@ export const AssetSelectionStep = ({
         }}
       />
 
-      <div className="flex items-center justify-center">
+      <div className={`flex items-center justify-space-between ${styles.titleContainer}`}>
         <Image
           src={BackSvg}
           alt={""}
-          style={{ marginRight: 400 }}
-          className="h-5 w-5 absolute"
+          className="h-5 w-5"
           onClick={onBackButton}
         />
         <h2 className={`${styles.title}`}>Your assets</h2>
         <Image
           src={RefreshSvg}
           alt={""}
-          style={{ marginLeft: 400 }}
-          className="h-5 w-5 absolute"
+          className="h-5 w-5"
           onClick={reloadAssets}
         />
       </div>

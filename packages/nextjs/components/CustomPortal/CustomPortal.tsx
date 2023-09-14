@@ -41,7 +41,12 @@ export const CustomPortal = ({ indicator, title, image, children, video, descrip
           exit={{ opacity: 0 }}
           className={`${styles.modalContainer}`}
         >
-          <div className={`${styles.modal} bg-base-300`}>
+          <motion.div
+           initial={{ opacity: 0, scale:0.8 }}
+           animate={{ opacity: 1,scale:1 }}
+           exit={{ opacity: 0,scale:0.8 }}
+            transition={{ delay: 0.3 }}
+          className={`${styles.modal} bg-base-300`}>
             <span className={`${styles.close}`} onClick={() => setMounted(false)}>
               {" "}
               {!!close ? <Image src={CloseSvg} alt={""} onClick={() => close()} /> : <></>}
@@ -67,7 +72,7 @@ export const CustomPortal = ({ indicator, title, image, children, video, descrip
                 <></>
               )}
             </div>
-          </div>
+          </motion.div>
         </motion.div>,
         portalSelector,
       )

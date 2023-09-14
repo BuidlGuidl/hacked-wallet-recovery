@@ -15,7 +15,10 @@
     align-items: center;
     max-width: 600px;
 }
-
+.titleContainer{
+    width: 100%;
+    position: relative;
+}
 .title{
     font-size: 23px;
     font-style: normal;
@@ -50,6 +53,7 @@ font-weight: 500;
     width: 100%;
     max-height: calc(100vh - 500px);
     height: calc(100vh - 500px);
+    min-height: 200px;
     overflow: auto;
     margin: 36px 0;
     margin-bottom: 0;
