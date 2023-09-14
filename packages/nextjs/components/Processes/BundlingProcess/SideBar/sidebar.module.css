@@ -19,7 +19,12 @@
   font-style: normal;
   font-weight: 400;
 }
-
+.hackedAddressTitle{
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  width: 100%;
+}
 .logo {
   width: 60px;
   height: 60px;

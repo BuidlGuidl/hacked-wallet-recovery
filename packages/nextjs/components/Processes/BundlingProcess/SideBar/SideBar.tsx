@@ -4,6 +4,7 @@ import { SideBarSteps } from "./SideBarSteps";
 import styles from "./sidebar.module.css";
 import { Address } from "~~/components/scaffold-eth";
 import { BundlingSteps } from "~~/types/enums";
+import LogoutSvg from "~~/public/assets/flashbotRecovery/logout.svg";
 
 interface ISideBar {
   activeStep: BundlingSteps;
@@ -11,6 +12,12 @@ interface ISideBar {
   hackedAddress: string;
 }
 export const SideBar = ({ activeStep, safeAddress, hackedAddress }: ISideBar) => {
+
+  const reload = () => {
+    localStorage.clear();
+    window.location.reload();
+  };
+
   return (
     <div className={styles.sidebar}>
       <div className={styles.sidebarContent}>
@@ -31,6 +38,12 @@ export const SideBar = ({ activeStep, safeAddress, hackedAddress }: ISideBar) =>
           <div className="m-2"></div>
           <Address address={hackedAddress} disableAddressLink={true}></Address>
         </div>
+        <Image
+          src={LogoutSvg}
+          alt={""}
+          className="h-5 w-5 cursor-pointer"
+          onClick={() => reload()}
+        />
       </div>
     </div>
   );
