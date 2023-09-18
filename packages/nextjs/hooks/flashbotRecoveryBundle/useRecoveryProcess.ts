@@ -69,7 +69,10 @@ export const useRecoveryProcess = () => {
       setBlockCountdown(blockDelta);
 
       if (blockDelta < 0) {
-        showError("Error, try again");
+        showError(
+          `The recovery has failed, To solve this error clean your wallet, remove all "Hacked Wallet Recovery RPC" and clear activity data`,
+          true,
+        );
         setSentBlock(0);
         setSentTxHash("");
         resetStatus();
@@ -279,7 +282,7 @@ export const useRecoveryProcess = () => {
         params: [
           {
             chainId: `0x${targetNetwork.network == "goerli" ? 5 : 1}`,
-            chainName: "Flashbot Personal RPC",
+            chainName: "Hacked Wallet Recovery RPC",
             nativeCurrency: {
               name: "ETH",
               symbol: "ETH",

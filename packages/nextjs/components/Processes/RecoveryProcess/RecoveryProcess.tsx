@@ -61,7 +61,7 @@ export const RecoveryProcess = ({
       <CustomPortal
         title={"Clear cache"}
         description={
-          "We've encountered an issue due to outdated cached data. To solve this error clean your wallet, remove all Flashbot Personal RPC and clear activity data"
+          `We've encountered an issue due to outdated cached data. To solve this error clean your wallet, remove all "Hacked Wallet Recovery RPC" and clear activity data`
         }
         image={ErrorSvg}
       />
