@@ -169,14 +169,14 @@ export const RecoveryProcess = ({
       >
         <div className={styles.shareButtons}>
           <a
-            href="https://twitter.com/intent/tweet?url=https://yourwebsite.com&text=I%20have%20been%20helped%20to%20recover%20my%20assets%20with%20this%20amazing%20tool"
+            href="https://twitter.com/intent/tweet?url=https://hackedwalletrecovery.com&text=I%20have%20been%20helped%20to%20recover%20my%20assets%20with%20this%20amazing%20tool"
             target="_blank"
             rel="noopener noreferrer"
           >
             <Image width={40} src={TwitterSvg} alt={""} />
           </a>
           <a
-            href="https://t.me/share/url?url=https://yourwebsite.com&text=I%20have%20been%20helped%20to%20recover%20my%20assets%20with%20this%20amazing%20tool"
+            href="https://t.me/share/url?url=https://hackedwalletrecovery.com&text=I%20have%20been%20helped%20to%20recover%20my%20assets%20with%20this%20amazing%20tool"
             target="_blank"
             rel="noopener noreferrer"
           >
