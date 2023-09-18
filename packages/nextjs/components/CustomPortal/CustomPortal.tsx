@@ -59,7 +59,7 @@ export const CustomPortal = ({ indicator, title, image, children, video, descrip
               </div>
 
               {!!video ? <Image className={`${styles.image}`} src={video} alt={""} /> : <></>}
-              <p className={`${styles.text} text-secondary-content`}>{description}</p>
+              <p className={`${styles.text} text-secondary-content`} dangerouslySetInnerHTML={{__html:description}}></p>
               {!!children ? children : <></>}
               {!!button ? (
                 <CustomButton

@@ -70,7 +70,7 @@ export const useRecoveryProcess = () => {
 
       if (blockDelta < 0) {
         showError(
-          `The recovery has failed, To solve this error clean your wallet, remove all "Hacked Wallet Recovery RPC" and clear activity data`,
+          `The recovery has failed. To solve this issue, remove all "Hacked Wallet Recovery RPC" and clear activity data. Check this <a href="https://youtu.be/G4dg74m_Bmc" target="_blank" rel="noopener noreferrer">video</a>`,
           true,
         );
         setSentBlock(0);
