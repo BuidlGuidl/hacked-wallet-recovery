@@ -16,7 +16,7 @@ export const HackedAddressStep = ({ isVisible, safeAddress, onSubmit }: IProps) 
   const [hackedAddress, setHackedAddressCore] = useState<string>("");
   const setHackedAddress = (hackedAddress: string) => {
     if (safeAddress == hackedAddress) {
-      showError("Cannot select safe and hacked addresses the same");
+      showError("The secure and the hacked address can't be the same");
       setHackedAddressCore("");
       return;
     }

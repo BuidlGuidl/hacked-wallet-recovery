@@ -100,7 +100,7 @@ export const RecoveryProcess = ({
       <CustomPortal
         title={"The Funding Transaction"}
         description={
-          "Sign the transaction to found the hacked account with enought founds to send all the transactions in the recovery process, in this way your founds will be the minimun time posible in the hacked account."
+          "Sign the transaction to fund the hacked account with enought founds to send all the transactions in the recovery process, in this way your founds will be the minimun time posible in the hacked account."
         }
         image={SignSvg}
       />
@@ -112,7 +112,7 @@ export const RecoveryProcess = ({
       <CustomPortal
         title={"Switch to Hacked Address"}
         description={
-          "To proceed with asset recovery, switch to the compromised address in your wallet. This step is essential to verify ownership and continue with the recovery process."
+          "To proceed with asset recovery, switch to the compromised wallet. This step is essential to verify ownership and continue with the recovery process."
         }
         button={{
           text: "Continue",

@@ -42,7 +42,7 @@ export const SideBar = ({ activeStep, hackedAddress, safeAddress }: ISideBar) =>
         <Image
           src={LogoutSvg}
           alt={""}
-          className="h-5 w-5 cursor-pointer"
+          className={`h-5 w-5 cursor-pointer ${styles.logout}`}
           onClick={() => reload()}
         />
       </div>

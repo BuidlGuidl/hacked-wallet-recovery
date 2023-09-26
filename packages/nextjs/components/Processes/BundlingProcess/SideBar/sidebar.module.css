@@ -19,6 +19,9 @@
   font-style: normal;
   font-weight: 400;
 }
+.logout{
+margin-top: 10px;
+}
 .hackedAddressTitle{
   display: flex;
   flex-direction: row;
