@@ -1,3 +1,5 @@
+export const CONTRACT_ADDRESS ="XXXXXXXXXXXXXXXXXXXXXXXXXXXX";
+
 export const ERC721_ABI = [
   {
     constant: true,

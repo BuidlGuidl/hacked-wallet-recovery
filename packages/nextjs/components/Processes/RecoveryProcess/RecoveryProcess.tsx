@@ -27,7 +27,10 @@ interface IProps {
   connectedAddress: string | undefined;
   safeAddress: string;
   hackedAddress: string;
+  donationValue: string;
+  setDonationValue:(amt:string) => void;
   blockCountdown: number;
+  isDonationLoading:boolean;
 }
 
 export const RecoveryProcess = ({
@@ -37,13 +40,39 @@ export const RecoveryProcess = ({
   finishProcess,
   showTipsModal,
   blockCountdown,
+  donationValue,
+  setDonationValue,
   connectedAddress,
   safeAddress,
+  isDonationLoading,
   hackedAddress,
 }: IProps) => {
   const { showError } = useShowError();
-  const [donationValue, setDonationValue] = useState<string>("");
 
+  return (
+    <CustomPortal
+      title={"Support Our Mission"}
+      description={
+        "Your contribution can significantly impact our mission to provide safe and free tools that empower the community."
+      }
+      button={{
+        text: isDonationLoading ? 'Sending...' : 'Finish',
+        disabled: isDonationLoading,
+        action: () => finishProcess(),
+      }}
+      image={TipsSvg}
+    >
+      
+      <div className={styles.inputContainer}>
+        <label className={styles.label} htmlFor="tip">
+          Tip
+        </label>
+        <div className="mt-2" />
+        <InputBase name="tip" placeholder="0.0" value={donationValue} onChange={setDonationValue} />
+        <span className={`${styles.eth} text-base-100`}>ETH</span>
+      </div>
+    </CustomPortal>
+  );
   if (recoveryStatus == RecoveryProcessStatus.INITIAL) {
     return <></>;
   }
@@ -194,12 +223,13 @@ export const RecoveryProcess = ({
           "Your contribution can significantly impact our mission to provide safe and free tools that empower the community."
         }
         button={{
-          text: "Finish",
-          disabled: false,
+          text: isDonationLoading ? 'Sending...' : 'Finish',
+          disabled: isDonationLoading,
           action: () => finishProcess(),
         }}
         image={TipsSvg}
       >
+        
         <div className={styles.inputContainer}>
           <label className={styles.label} htmlFor="tip">
             Tip
