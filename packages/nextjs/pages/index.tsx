@@ -16,6 +16,7 @@ import GasSvg from "~~/public/assets/flashbotRecovery/gas-illustration.svg";
 
 import ErrorSvg from "~~/public/assets/flashbotRecovery/error.svg";
 import { BundlingSteps, RecoveryProcessStatus } from "~~/types/enums";
+import { RecoveryTx } from "~~/types/business";
 
 const Home: NextPage = () => {
   const { isConnected: walletConnected, address: connectedAddress } = useAccount();
@@ -118,21 +119,14 @@ const Home: NextPage = () => {
           hackedAddress={hackedAddress}
         />
         
-        {isFinalProcessError && error != "" ? (
+        {error != "" ? (
           <CustomPortal
             close={() => resetError()}
             title={"Something wrong has happend"}
             description={error}
-            image={GasSvg}
+            image={isFinalProcessError ? GasSvg:ErrorSvg}
           />
-        ) : error != "" ? (
-          <CustomPortal
-            close={() => resetError()}
-            title={"Something wrong has happend"}
-            description={error}
-            image={ErrorSvg}
-          />
-        ):<></>}
+        ) : <></>}
       </div>
     </>
   );
