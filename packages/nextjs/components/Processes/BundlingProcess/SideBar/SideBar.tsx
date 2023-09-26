@@ -9,8 +9,9 @@ import LogoutSvg from "~~/public/assets/flashbotRecovery/logout.svg";
 interface ISideBar {
   activeStep: BundlingSteps;
   hackedAddress: string;
+  safeAddress:string;
 }
-export const SideBar = ({ activeStep, hackedAddress }: ISideBar) => {
+export const SideBar = ({ activeStep, hackedAddress, safeAddress }: ISideBar) => {
 
   const reload = () => {
     localStorage.clear();
