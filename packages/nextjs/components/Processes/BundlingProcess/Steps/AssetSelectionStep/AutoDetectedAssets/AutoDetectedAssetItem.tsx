@@ -62,7 +62,7 @@ export const AutoDetectedAssetItem = ({ onClick, isSelected, tx, isLoading, imag
           className={styles.logo}
           width={60}
           height={60}
-          src={image ? image : tx?.type === "erc20" ? ERC20Svg.src : EmptySvg}
+          src={image ? image : tx?.type === "erc20" ? ERC20Svg.src : EmptySvg.src}
           alt=""
         />
         {tx?.type === "erc20" ? <span className={styles.coinTitle}>ERC20</span> : ""}
