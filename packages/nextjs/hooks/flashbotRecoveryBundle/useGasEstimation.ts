@@ -3,12 +3,9 @@ import { FlashbotsBundleProvider } from "@flashbots/ethers-provider-bundle";
 import { BigNumber, ethers } from "ethers";
 import { usePublicClient } from "wagmi";
 import { CoreTxToEstimate, CoreTxToSign, RecoveryTx } from "~~/types/business";
+import { BLOCKS_IN_THE_FUTURE } from "~~/utils/constants";
 import { getTargetNetwork } from "~~/utils/scaffold-eth";
 
-const BLOCKS_IN_THE_FUTURE: { [i: number]: number } = {
-  1: 7,
-  5: 10,
-};
 
 export const useGasEstimation = () => {
   const targetNetwork = getTargetNetwork();

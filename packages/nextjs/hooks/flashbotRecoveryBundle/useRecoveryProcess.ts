@@ -9,6 +9,7 @@ import { useAccount, usePublicClient, useWalletClient } from "wagmi";
 import { RecoveryTx } from "~~/types/business";
 import { RecoveryProcessStatus } from "~~/types/enums";
 import { getTargetNetwork } from "~~/utils/scaffold-eth";
+import { BLOCKS_IN_THE_FUTURE } from "~~/utils/constants";
 
 interface IStartProcessPops {
   safeAddress: string;
@@ -18,11 +19,6 @@ interface IStartProcessPops {
   transactions: RecoveryTx[];
   currentBundleId: string;
 }
-
-const BLOCKS_IN_THE_FUTURE: { [i: number]: number } = {
-  1: 7,
-  5: 10,
-};
 
 const flashbotSigner = ethers.Wallet.createRandom();
 

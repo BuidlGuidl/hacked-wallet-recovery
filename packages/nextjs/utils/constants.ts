@@ -1,4 +1,8 @@
 export const CONTRACT_ADDRESS ="XXXXXXXXXXXXXXXXXXXXXXXXXXXX";
+export const BLOCKS_IN_THE_FUTURE: { [i: number]: number } = {
+  1: 20,
+  5: 30,
+};
 
 export const ERC721_ABI = [
   {
