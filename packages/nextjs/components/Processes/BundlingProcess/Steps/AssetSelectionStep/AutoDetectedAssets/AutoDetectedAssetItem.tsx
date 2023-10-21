@@ -1,4 +1,6 @@
 import EmptySvg from "../../../../../../public/assets/flashbotRecovery/empty.svg";
+import TransactionsSvg from "../../../../../../public/assets/flashbotRecovery/transactions.svg";
+
 import ERC20Svg from "../../../../../../public/assets/flashbotRecovery/coin.svg";
 
 import styles from "./autoDetectedAssets.module.css";
@@ -62,7 +64,7 @@ export const AutoDetectedAssetItem = ({ onClick, isSelected, tx, isLoading, imag
           className={styles.logo}
           width={60}
           height={60}
-          src={image ? image : tx?.type === "erc20" ? ERC20Svg.src : EmptySvg.src}
+          src={image ? image : tx?.type === "erc20" ? ERC20Svg.src : tx?.type ==="custom" ? TransactionsSvg.src :EmptySvg.src}
           alt=""
         />
         {tx?.type === "erc20" ? <span className={styles.coinTitle}>ERC20</span> : ""}
