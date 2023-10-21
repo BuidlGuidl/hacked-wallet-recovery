@@ -13,14 +13,15 @@ interface IProps {
   children?: JSX.Element;
   close?: () => void;
   description: string;
-  button?: {
+  buttons?: {
     text: string;
     disabled: boolean;
     action: () => void;
-  };
+    isSecondary?:boolean,
+  }[];
   indicator?: number;
 }
-export const CustomPortal = ({ indicator, title, image, children, video, description, button, close }: IProps) => {
+export const CustomPortal = ({ indicator, title, image, children, video, description, buttons, close }: IProps) => {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -61,16 +62,15 @@ export const CustomPortal = ({ indicator, title, image, children, video, descrip
               {!!video ? <Image className={`${styles.image}`} src={video} alt={""} /> : <></>}
               <p className={`${styles.text} text-secondary-content`} dangerouslySetInnerHTML={{__html:description}}></p>
               {!!children ? children : <></>}
-              {!!button ? (
-                <CustomButton
-                  type="btn-primary"
+              {buttons?.map((button,i) => {
+                  return <CustomButton
+                  key={i}
+                  type={!!button.isSecondary ? "btn-accent" :"btn-primary"}
                   disabled={button.disabled}
                   text={button.text}
                   onClick={() => button.action()}
                 />
-              ) : (
-                <></>
-              )}
+              })}
             </div>
           </motion.div>
         </motion.div>,

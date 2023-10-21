@@ -43,6 +43,7 @@ export const InputBase = <T extends { toString: () => string } | undefined = str
         onChange={handleChange}
         disabled={disabled}
         autoComplete="off"
+        style={{background: "#243148"}}
       />
       {suffix}
     </div>

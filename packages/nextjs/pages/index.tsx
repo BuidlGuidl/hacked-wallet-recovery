@@ -2,8 +2,8 @@ import { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 import { BigNumber } from "ethers";
 import { NextPage } from "next";
-import { useDebounce, useLocalStorage } from "usehooks-ts";
-import { useAccount, usePrepareSendTransaction, useSendTransaction, useWaitForTransaction } from "wagmi";
+import { useLocalStorage } from "usehooks-ts";
+import { useAccount, usePrepareSendTransaction, useSendTransaction } from "wagmi";
 import { CustomPortal } from "~~/components/CustomPortal/CustomPortal";
 import { MetaHeader } from "~~/components/MetaHeader";
 import { BundlingProcess } from "~~/components/Processes/BundlingProcess/BundlingProcess";
@@ -36,22 +36,16 @@ const Home: NextPage = () => {
     setUnsignedTxs,
     validateBundleIsReady,
   } = useRecoveryProcess();
-
-
-  const [amount, setAmount] = useState('')
-  const [debouncedAmount] = useDebounce(amount, 500)
  
+
   const { config } = usePrepareSendTransaction({
     to: CONTRACT_ADDRESS,
-    value: debouncedAmount ? parseEther(debouncedAmount) : undefined,
+    value: undefined,
   })
-  const { data, sendTransaction } = useSendTransaction(config)
- 
-  const { isLoading:isDonationLoading, isSuccess:isDonationSuccess } = useWaitForTransaction({
-    hash: data?.hash,
-  })
+  const { data, isLoading:isDonationLoading, isSuccess:isDonationSuccess, sendTransaction } =
+    useSendTransaction(config)
 
-
+  
   const startSigning = () => {
     signRecoveryTransactions(hackedAddress, unsignedTxs, currentBundleId, false);
   };
@@ -92,13 +86,12 @@ const Home: NextPage = () => {
     window.location.reload();
   }
   const finishProcess = () => {
-    debugger
-    if(!debouncedAmount){
+    if(!donationValue){
       cleanApp()
       return;
     }
-    if(parseEther(debouncedAmount)>0){
-      sendTransaction?.()
+    if(parseEther(donationValue)>0){
+      sendTransaction?.({...config, value:parseEther(donationValue)})
     }
  
   };

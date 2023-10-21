@@ -22,6 +22,7 @@ import TelegramSvg from "~~/public/assets/flashbotRecovery/telegram.svg";
 import TipsSvg from "~~/public/assets/flashbotRecovery/tips.svg";
 import TwitterSvg from "~~/public/assets/flashbotRecovery/twitter.svg";
 import { RecoveryProcessStatus } from "~~/types/enums";
+import { getTargetNetwork } from "~~/utils/scaffold-eth";
 
 interface IProps {
   recoveryStatus: RecoveryProcessStatus;
@@ -54,6 +55,11 @@ export const RecoveryProcess = ({
   totalGasEstimate,
 }: IProps) => {
   const { showError } = useShowError();
+  const {address} =useAccount()
+  const { balance } = useAccountBalance(address);
+  const networkName = getTargetNetwork().name;
+  const hasEnoughtEth = !!balance ? balance > parseFloat(donationValue) : false;
+ 
   if (recoveryStatus == RecoveryProcessStatus.INITIAL) {
     return <></>;
   }
@@ -127,11 +133,13 @@ export const RecoveryProcess = ({
         description={
           "To proceed with asset recovery, switch to the compromised wallet. This step is essential to verify ownership and continue with the recovery process."
         }
-        button={{
-          text: "Continue",
-          disabled: connectedAddress !== hackedAddress,
-          action: () => startSigning(),
-        }}
+        buttons={[
+          {
+            text: "Continue",
+            disabled: connectedAddress !== hackedAddress,
+            action: () => startSigning(),
+          },
+        ]}
         image={HackedWalletSvg}
       />
     );
@@ -173,11 +181,20 @@ export const RecoveryProcess = ({
         description={
           "Check your safe wallet for your retrieved assets. Share your journey and consider to support us with a tip to continue serving the crypto community."
         }
-        button={{
-          text: "Finish",
-          disabled: false,
-          action: () => showTipsModal(),
-        }}
+        buttons={[
+          {
+            text: "Donate",
+            isSecondary: true,
+            disabled: false,
+            action: () => showTipsModal(),
+          },
+          {
+            text: "Finish",
+            disabled: false,
+            isSecondary: false,
+            action: () => finishProcess(),
+          },
+        ]}
         image={SuccessSvg}
       >
         <div className={styles.shareButtons}>
@@ -200,29 +217,35 @@ export const RecoveryProcess = ({
     );
   }
   if (recoveryStatus === RecoveryProcessStatus.DONATE) {
-    return (
+    return(
       <CustomPortal
-        title={"Support Our Mission"}
-        description={
-          "Your contribution can significantly impact our mission to provide safe and free tools that empower the community."
-        }
-        button={{
-          text: isDonationLoading ? "Sending..." : "Finish",
-          disabled: isDonationLoading,
+      title={"Support Our Mission"}
+      description={
+        "Your contribution can significantly impact our mission to provide safe and free tools that empower the community."
+      }
+      buttons={[
+        {
+          text: isDonationLoading ? "Sending..." : "Donate",
+          disabled: isDonationLoading || !hasEnoughtEth || !address ,
           action: () => finishProcess(),
-        }}
-        image={TipsSvg}
-      >
-        <div className={styles.inputContainer}>
-          <label className={styles.label} htmlFor="tip">
-            Tip
-          </label>
-          <div className="mt-2" />
-          <InputBase name="tip" placeholder="0.0" value={donationValue} onChange={setDonationValue} />
-          <span className={`${styles.eth} text-base-100`}>ETH</span>
-        </div>
-      </CustomPortal>
-    );
+        },
+      ]}
+      image={TipsSvg}
+    >
+     
+      <>
+      <div className={styles.inputContainer}>
+        <label className={styles.label} htmlFor="tip">
+          Tip
+        </label>
+        <div className="mt-2" />
+        <InputBase name="tip" placeholder="0.0" value={donationValue} onChange={setDonationValue} />
+        <span className={`${styles.eth} text-base-100`}>ETH</span>
+      </div>
+      <p className={`text-secondary-content`}>Please change the network first to <b>{networkName}</b></p>
+      </>
+    </CustomPortal>
+    )
   }
 
   return <></>;
@@ -245,7 +268,9 @@ export const ConnectSafeStep = ({ hackedAddress, startProcess, totalGasEstimate 
       {!!address ? (
         <>
           {!hasEnoughtEth ? (
-            <p className={`text-center text-secondary-content ${styles.warning}`}>This wallet doesn't have enough ETH to pay for the transactions.</p>
+            <p className={`text-center text-secondary-content ${styles.warning}`}>
+              This wallet doesn't have enough ETH to pay for the transactions.
+            </p>
           ) : (
             <></>
           )}
