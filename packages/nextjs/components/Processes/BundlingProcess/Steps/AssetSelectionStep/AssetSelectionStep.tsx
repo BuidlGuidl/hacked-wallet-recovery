@@ -104,7 +104,7 @@ export const AssetSelectionStep = ({
           className="h-5 w-5"
           onClick={onBackButton}
         />
-        <h2 className={`${styles.title}`}>Your assets</h2>
+        <h2 className={`${styles.title}`}>Select your assets</h2>
         <Image
           src={RefreshSvg}
           alt={""}
@@ -122,7 +122,7 @@ export const AssetSelectionStep = ({
 
       <CustomButton type="btn-accent" text={"Add Manually"} onClick={() => setIsAddingManually(true)} />
       <div className="m-2" />
-      <CustomButton type="btn-primary" text={"Continue"} onClick={onAddAssetsClick} />
+      <CustomButton disabled={selectedAssetIndices.length === 0} type="btn-primary" text={"Continue"} onClick={onAddAssetsClick} />
     </motion.div>
   );
 };
