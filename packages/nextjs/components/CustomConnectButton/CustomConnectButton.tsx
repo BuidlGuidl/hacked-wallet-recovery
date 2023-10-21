@@ -31,7 +31,7 @@ export const CustomConnectButton = () => {
                       className="pl-0 pr-2"
                     >
                       <BlockieAvatar address={account.address} size={24}  ensImage={account.ensAvatar} />
-                      <span className="ml-2 mr-1">{account.address}</span>
+                      <span className="ml-2 mr-1 mt-1">{account.address}</span>
                     </button>
                   </div>
                 </div>

@@ -1,25 +1,27 @@
 import React, { useState } from "react";
 import Image from "next/image";
 import styles from "./recoveryProcess.module.css";
+import { BigNumber, ethers } from "ethers";
 import { useAccount } from "wagmi";
 import { CustomButton } from "~~/components/CustomButton/CustomButton";
+import { CustomConnectButton } from "~~/components/CustomConnectButton/CustomConnectButton";
 import { CustomPortal } from "~~/components/CustomPortal/CustomPortal";
 import { InputBase } from "~~/components/scaffold-eth";
+import { useGasEstimation } from "~~/hooks/flashbotRecoveryBundle/useGasEstimation";
 import { useShowError } from "~~/hooks/flashbotRecoveryBundle/useShowError";
+import { useAccountBalance } from "~~/hooks/scaffold-eth";
 import ClockSvg from "~~/public/assets/flashbotRecovery/clock.svg";
+import ErrorSvg from "~~/public/assets/flashbotRecovery/error.svg";
 import HackedWalletSvg from "~~/public/assets/flashbotRecovery/hacked.svg";
 import MultiSignSvg from "~~/public/assets/flashbotRecovery/multiple-sign-illustration.svg";
-import SignSvg from "~~/public/assets/flashbotRecovery/sign-illustration.svg";
+import SwitchNetworkSvg from "~~/public/assets/flashbotRecovery/network-change.svg";
 import SafeWalletSvg from "~~/public/assets/flashbotRecovery/safe.svg";
+import SignSvg from "~~/public/assets/flashbotRecovery/sign-illustration.svg";
 import SuccessSvg from "~~/public/assets/flashbotRecovery/success.svg";
 import TelegramSvg from "~~/public/assets/flashbotRecovery/telegram.svg";
 import TipsSvg from "~~/public/assets/flashbotRecovery/tips.svg";
 import TwitterSvg from "~~/public/assets/flashbotRecovery/twitter.svg";
-import ErrorSvg from "~~/public/assets/flashbotRecovery/error.svg";
-import SwitchNetworkSvg from "~~/public/assets/flashbotRecovery/network-change.svg";
-
 import { RecoveryProcessStatus } from "~~/types/enums";
-import { CustomConnectButton } from "~~/components/CustomConnectButton/CustomConnectButton";
 
 interface IProps {
   recoveryStatus: RecoveryProcessStatus;
@@ -31,9 +33,10 @@ interface IProps {
   safeAddress: string;
   hackedAddress: string;
   donationValue: string;
-  setDonationValue:(amt:string) => void;
+  setDonationValue: (amt: string) => void;
   blockCountdown: number;
-  isDonationLoading:boolean;
+  isDonationLoading: boolean;
+  totalGasEstimate: BigNumber;
 }
 
 export const RecoveryProcess = ({
@@ -46,34 +49,11 @@ export const RecoveryProcess = ({
   donationValue,
   setDonationValue,
   connectedAddress,
+  isDonationLoading,
   hackedAddress,
+  totalGasEstimate,
 }: IProps) => {
   const { showError } = useShowError();
-      //TODO UNCOMMENT HERE TO HIDE THE PROCESS
-  // return (
-  //   <CustomPortal
-  //     title={"Support Our Mission"}
-  //     description={
-  //       "Your contribution can significantly impact our mission to provide safe and free tools that empower the community."
-  //     }
-  //     button={{
-  //       text: isDonationLoading ? 'Sending...' : 'Finish',
-  //       disabled: isDonationLoading,
-  //       action: () => finishProcess(),
-  //     }}
-  //     image={TipsSvg}
-  //   >
-      
-  //     <div className={styles.inputContainer}>
-  //       <label className={styles.label} htmlFor="tip">
-  //         Tip
-  //       </label>
-  //       <div className="mt-2" />
-  //       <InputBase name="tip" placeholder="0.0" value={donationValue} onChange={setDonationValue} />
-  //       <span className={`${styles.eth} text-base-100`}>ETH</span>
-  //     </div>
-  //   </CustomPortal>
-  // );
   if (recoveryStatus == RecoveryProcessStatus.INITIAL) {
     return <></>;
   }
@@ -90,9 +70,7 @@ export const RecoveryProcess = ({
     return (
       <CustomPortal
         title={"Clear cache"}
-        description={
-          `We've encountered an issue due to outdated cached data. To solve this error clean your wallet, remove all "Hacked Wallet Recovery RPC" and clear activity data`
-        }
+        description={`We've encountered an issue due to outdated cached data. To solve this error clean your wallet, remove all "Hacked Wallet Recovery RPC" and clear activity data`}
         image={ErrorSvg}
       />
     );
@@ -111,7 +89,11 @@ export const RecoveryProcess = ({
         }
         image={SafeWalletSvg}
       >
-        <ConnectSafeStep hackedAddress={hackedAddress} startProcess={(add) =>startProcess(add)} />
+        <ConnectSafeStep
+          hackedAddress={hackedAddress}
+          startProcess={add => startProcess(add)}
+          totalGasEstimate={totalGasEstimate}
+        />
       </CustomPortal>
     );
   }
@@ -184,7 +166,7 @@ export const RecoveryProcess = ({
     );
   }
 
-  if (recoveryStatus == RecoveryProcessStatus.SUCCESS || recoveryStatus === RecoveryProcessStatus.DONATE) {
+  if (recoveryStatus == RecoveryProcessStatus.SUCCESS) {
     return (
       <CustomPortal
         title={"Your assets have been recovered!"}
@@ -194,7 +176,7 @@ export const RecoveryProcess = ({
         button={{
           text: "Finish",
           disabled: false,
-          action: () => finishProcess(),
+          action: () => showTipsModal(),
         }}
         image={SuccessSvg}
       >
@@ -217,32 +199,31 @@ export const RecoveryProcess = ({
       </CustomPortal>
     );
   }
-  // if (recoveryStatus === RecoveryProcessStatus.DONATE) {
-  //   return (
-  //     <CustomPortal
-  //       title={"Support Our Mission"}
-  //       description={
-  //         "Your contribution can significantly impact our mission to provide safe and free tools that empower the community."
-  //       }
-  //       button={{
-  //         text: isDonationLoading ? 'Sending...' : 'Finish',
-  //         disabled: isDonationLoading,
-  //         action: () => finishProcess(),
-  //       }}
-  //       image={TipsSvg}
-  //     >
-        
-  //       <div className={styles.inputContainer}>
-  //         <label className={styles.label} htmlFor="tip">
-  //           Tip
-  //         </label>
-  //         <div className="mt-2" />
-  //         <InputBase name="tip" placeholder="0.0" value={donationValue} onChange={setDonationValue} />
-  //         <span className={`${styles.eth} text-base-100`}>ETH</span>
-  //       </div>
-  //     </CustomPortal>
-  //   );
-  // }
+  if (recoveryStatus === RecoveryProcessStatus.DONATE) {
+    return (
+      <CustomPortal
+        title={"Support Our Mission"}
+        description={
+          "Your contribution can significantly impact our mission to provide safe and free tools that empower the community."
+        }
+        button={{
+          text: isDonationLoading ? "Sending..." : "Finish",
+          disabled: isDonationLoading,
+          action: () => finishProcess(),
+        }}
+        image={TipsSvg}
+      >
+        <div className={styles.inputContainer}>
+          <label className={styles.label} htmlFor="tip">
+            Tip
+          </label>
+          <div className="mt-2" />
+          <InputBase name="tip" placeholder="0.0" value={donationValue} onChange={setDonationValue} />
+          <span className={`${styles.eth} text-base-100`}>ETH</span>
+        </div>
+      </CustomPortal>
+    );
+  }
 
   return <></>;
 };
@@ -250,24 +231,41 @@ export const RecoveryProcess = ({
 interface IConnectSafeStepProps {
   startProcess: (arg: string) => void;
   hackedAddress: string;
+  totalGasEstimate: BigNumber;
 }
-export const ConnectSafeStep = ({ hackedAddress, startProcess }: IConnectSafeStepProps) => {
-  const {address} = useAccount();
+export const ConnectSafeStep = ({ hackedAddress, startProcess, totalGasEstimate }: IConnectSafeStepProps) => {
+  const { address } = useAccount();
+  const { balance } = useAccountBalance(address);
+  const hasEnoughtEth = !!balance && balance > parseFloat(ethers.utils.formatEther(totalGasEstimate.toString()));
+  const isConfirmBlocked = !address || address == hackedAddress || !hasEnoughtEth;
   return (
     <div className={styles.buttonContainer}>
       <CustomConnectButton />
       <div className="mt-4"></div>
-      {!!address ? <CustomButton
-        type="btn-primary"
-        disabled={!address || address == hackedAddress}
-        text={"Confirm"}
-        onClick={() => {
-          if(!address || address == hackedAddress){
-            return
-          }
-          startProcess(address)
-        }}
-      />: <></>}
+      {!!address ? (
+        <>
+          {!hasEnoughtEth ? (
+            <p className={`text-center text-secondary-content ${styles.warning}`}>This wallet doesn't have enough ETH to pay for the transactions.</p>
+          ) : (
+            <></>
+          )}
+
+          <CustomButton
+            type="btn-primary"
+            disabled={isConfirmBlocked}
+            text={"Confirm"}
+            onClick={() => {
+              if (isConfirmBlocked) {
+                return;
+              }
+
+              startProcess(address);
+            }}
+          />
+        </>
+      ) : (
+        <></>
+      )}
     </div>
   );
 };

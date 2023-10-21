@@ -3,7 +3,7 @@ import dynamic from "next/dynamic";
 import { BigNumber } from "ethers";
 import { NextPage } from "next";
 import { useDebounce, useLocalStorage } from "usehooks-ts";
-import { useAccount, useNetwork, usePrepareSendTransaction, useSendTransaction, useSwitchNetwork, useWaitForTransaction } from "wagmi";
+import { useAccount, usePrepareSendTransaction, useSendTransaction, useWaitForTransaction } from "wagmi";
 import { CustomPortal } from "~~/components/CustomPortal/CustomPortal";
 import { MetaHeader } from "~~/components/MetaHeader";
 import { BundlingProcess } from "~~/components/Processes/BundlingProcess/BundlingProcess";
@@ -15,7 +15,6 @@ import GasSvg from "~~/public/assets/flashbotRecovery/gas-illustration.svg";
 import ErrorSvg from "~~/public/assets/flashbotRecovery/error.svg";
 import { BundlingSteps, RecoveryProcessStatus } from "~~/types/enums";
 import { CONTRACT_ADDRESS, DUMMY_ADDRESS } from "~~/utils/constants";
-import { getTargetNetwork } from "~~/utils/scaffold-eth";
 import { parseEther } from "viem";
 
 const Home: NextPage = () => {
@@ -27,10 +26,6 @@ const Home: NextPage = () => {
   const [currentBundleId, setCurrentBundleId] = useLocalStorage<string>("bundleUuid", "");
   const { error, resetError,isFinalProcessError} = useShowError();
   const [donationValue, setDonationValue] = useState<string>("");
-  const targetNetwork = getTargetNetwork();
-  const { chain } = useNetwork()
-  const { chains, isLoading, pendingChainId, switchNetworkAsync } =
-    useSwitchNetwork()
   const {
     data: processStatus,
     startRecoveryProcess,
@@ -42,7 +37,9 @@ const Home: NextPage = () => {
     validateBundleIsReady,
   } = useRecoveryProcess();
 
-  const [debouncedAmount] = useDebounce(donationValue, 500)
+
+  const [amount, setAmount] = useState('')
+  const [debouncedAmount] = useDebounce(amount, 500)
  
   const { config } = usePrepareSendTransaction({
     to: CONTRACT_ADDRESS,
@@ -95,15 +92,15 @@ const Home: NextPage = () => {
     window.location.reload();
   }
   const finishProcess = () => {
-    if(parseEther(donationValue) > 0 && !!sendTransaction){
-      //TODO HELP HERE GET OUT OF THE RPC
-      // switchNetworkAsync?.(5);
-      // sendTransaction({...config,
-      //   chainId:targetNetwork.id,
-      //   value:donationValue ? parseEther(donationValue) : undefined})
-      return
+    debugger
+    if(!debouncedAmount){
+      cleanApp()
+      return;
     }
-    cleanApp()
+    if(parseEther(debouncedAmount)>0){
+      sendTransaction?.()
+    }
+ 
   };
 
   useEffect(() => {
@@ -149,6 +146,7 @@ const Home: NextPage = () => {
           isDonationLoading={isDonationLoading}
           finishProcess={() => finishProcess()}
           startSigning={startSigning}
+          totalGasEstimate={totalGasEstimate}
           showTipsModal={showTipsModal}
           startProcess={add => startRecovery(add)}
           blockCountdown={blockCountdown}
