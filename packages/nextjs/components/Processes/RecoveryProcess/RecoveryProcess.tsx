@@ -119,7 +119,7 @@ export const RecoveryProcess = ({
       <CustomPortal
         title={"The Funding Transaction"}
         description={
-          "Sign the transaction to found the hacked account with enought founds to send all the transactions in the recovery process, in this way your founds will be the minimun time posible in the hacked account."
+          "Sign the transaction to fund the hacked account with enought funds to send all the transactions in the recovery process, in this way your funds will be the minimun time posible in the hacked account."
         }
         image={SignSvg}
       />
@@ -239,7 +239,7 @@ export const RecoveryProcess = ({
           Tip
         </label>
         <div className="mt-2" />
-        <InputBase name="tip" placeholder="0.0" value={donationValue} onChange={setDonationValue} />
+        <InputBase name="tip" placeholder="0.0" value={donationValue} onChange={(val) => setDonationValue(val.replace(",", "."))} />
         <span className={`${styles.eth} text-base-100`}>ETH</span>
       </div>
       <p className={`text-secondary-content`}>Please change the network first to <b>{networkName}</b></p>
