@@ -2,6 +2,7 @@ export const BLOCKS_IN_THE_FUTURE: { [i: number]: number } = {
   1: 20,
   5: 30,
 };
+
 export const DUMMY_ADDRESS = process.env.NEXT_PUBLIC_DUMMY_ADDRESS;
 export const CONTRACT_ADDRESS =process.env.NEXT_PUBLIC_CONTRACT_ADDRESS;
 export const ERC721_ABI = [
