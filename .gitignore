@@ -12,3 +12,4 @@ node_modules
 .vscode/**
 .DS_Store
 notes.txt
+packages/nextjs/.env

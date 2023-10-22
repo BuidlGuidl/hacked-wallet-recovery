@@ -290,27 +290,29 @@ export const useRecoveryProcess = () => {
         };
         return newErc721Tx;
       }
-
-      const data = item as ERC1155Tx;
-      const newErc1155Tx: ERC1155Tx = {
-        type: data.type,
-        info: data.info,
-        uri: data.uri,
-        tokenIds: data.tokenIds,
-        amounts: data.amounts,
-        toEstimate: {
-          from: data.toEstimate.from,
-          to: data.toEstimate.to,
-          data: erc1155Interface.encodeFunctionData("safeBatchTransferFrom", [
-            hackedAddress,
-            safeAddress,
-            data.tokenIds,
-            data.amounts,
-            ethers.constants.HashZero,
-          ]) as `0x${string}`,
-        },
-      };
-      return newErc1155Tx;
+      if (item.type === "erc1155") {
+        const data = item as ERC1155Tx;
+        const newErc1155Tx: ERC1155Tx = {
+          type: data.type,
+          info: data.info,
+          uri: data.uri,
+          tokenIds: data.tokenIds,
+          amounts: data.amounts,
+          toEstimate: {
+            from: data.toEstimate.from,
+            to: data.toEstimate.to,
+            data: erc1155Interface.encodeFunctionData("safeBatchTransferFrom", [
+              hackedAddress,
+              safeAddress,
+              data.tokenIds,
+              data.amounts,
+              ethers.constants.HashZero,
+            ]) as `0x${string}`,
+          },
+        };
+        return newErc1155Tx;
+      }
+      return item;
     });
   };
 
@@ -328,14 +330,12 @@ export const useRecoveryProcess = () => {
     }
     try {
       ////////// Create new bundle uuid & add corresponding RPC 'subnetwork' to Metamask
-      const transformedTransactions = generateCorrectTransactions({ transactions, safeAddress, hackedAddress });
-      setUnsignedTxs(transformedTransactions);
       const bundleId = await changeFlashbotNetwork();
       modifyBundleId(bundleId);
       setStepActive(RecoveryProcessStatus.INCREASE_PRIORITY_FEE);
       // ////////// Cover the envisioned total gas fee from safe account
       await payTheGas(totalGas, hackedAddress);
-      signRecoveryTransactions(hackedAddress, transformedTransactions, currentBundleId, true);
+      signRecoveryTransactions(hackedAddress, transactions, currentBundleId, true);
       return;
     } catch (e) {
       resetStatus();
@@ -387,6 +387,7 @@ export const useRecoveryProcess = () => {
     startRecoveryProcess,
     validateBundleIsReady,
     signRecoveryTransactions,
+    generateCorrectTransactions,
     resetStatus,
     showTipsModal,
     unsignedTxs,

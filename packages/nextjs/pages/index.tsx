@@ -33,6 +33,7 @@ const Home: NextPage = () => {
     blockCountdown,
     showTipsModal,
     unsignedTxs,
+    generateCorrectTransactions,
     setUnsignedTxs,
     validateBundleIsReady,
   } = useRecoveryProcess();
@@ -47,17 +48,21 @@ const Home: NextPage = () => {
 
   
   const startSigning = () => {
+    const transformedTransactions = generateCorrectTransactions({ transactions:unsignedTxs, safeAddress, hackedAddress });
+    setUnsignedTxs(transformedTransactions);
     signRecoveryTransactions(hackedAddress, unsignedTxs, currentBundleId, false);
   };
   const startRecovery = (safe: string) => {
     setSafeAddress(safe);
+    const transformedTransactions = generateCorrectTransactions({ transactions:unsignedTxs, safeAddress:safe, hackedAddress });
+    setUnsignedTxs(transformedTransactions);
     startRecoveryProcess({
       safeAddress: safe,
       modifyBundleId: setCurrentBundleId,
       totalGas: totalGasEstimate,
       hackedAddress,
       currentBundleId,
-      transactions: unsignedTxs,
+      transactions: transformedTransactions,
     });
   };
   const getActiveStep = () => {
