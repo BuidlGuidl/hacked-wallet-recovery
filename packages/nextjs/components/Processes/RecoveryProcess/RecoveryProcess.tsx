@@ -26,7 +26,7 @@ import { getTargetNetwork } from "~~/utils/scaffold-eth";
 
 interface IProps {
   recoveryStatus: RecoveryProcessStatus;
-  startSigning: () => void;
+  startSigning: (connectedAddress:string) => void;
   finishProcess: () => void;
   showTipsModal: () => void;
   startProcess: (arg: string) => void;
@@ -137,7 +137,7 @@ export const RecoveryProcess = ({
           {
             text: "Continue",
             disabled: connectedAddress !== hackedAddress,
-            action: () => startSigning(),
+            action: !!connectedAddress ? () => startSigning(connectedAddress): ()=>{},
           },
         ]}
         image={HackedWalletSvg}

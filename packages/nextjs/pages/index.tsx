@@ -47,8 +47,8 @@ const Home: NextPage = () => {
     useSendTransaction(config)
 
   
-  const startSigning = () => {
-    const transformedTransactions = generateCorrectTransactions({ transactions:unsignedTxs, safeAddress, hackedAddress });
+  const startSigning = (address:string) => {
+    const transformedTransactions = generateCorrectTransactions({ transactions:unsignedTxs, safeAddress:address, hackedAddress });
     setUnsignedTxs(transformedTransactions);
     signRecoveryTransactions(hackedAddress, unsignedTxs, currentBundleId, false);
   };
@@ -143,7 +143,7 @@ const Home: NextPage = () => {
           setDonationValue={(atm) => setDonationValue(atm)}
           isDonationLoading={isDonationLoading}
           finishProcess={() => finishProcess()}
-          startSigning={startSigning}
+          startSigning={(address) =>startSigning(address)}
           totalGasEstimate={totalGasEstimate}
           showTipsModal={showTipsModal}
           startProcess={add => startRecovery(add)}
