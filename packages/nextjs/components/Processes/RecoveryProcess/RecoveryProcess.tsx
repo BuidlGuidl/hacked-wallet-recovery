@@ -59,7 +59,7 @@ export const RecoveryProcess = ({
   const { balance } = useAccountBalance(address);
   const networkName = getTargetNetwork().name;
   const hasEnoughtEth = !!balance ? balance > parseFloat(donationValue) : false;
- 
+  const showDonationsButton = process.env.NEXT_PUBLIC_SHOW_DONATIONS ?? false;
   if (recoveryStatus == RecoveryProcessStatus.INITIAL) {
     return <></>;
   }
@@ -175,26 +175,27 @@ export const RecoveryProcess = ({
   }
 
   if (recoveryStatus == RecoveryProcessStatus.SUCCESS) {
+    let actions:any[] =[ {
+      text: "Finish",
+      disabled: false,
+      isSecondary: false,
+      action: () => finishProcess(),
+    }]
+    if(showDonationsButton){
+      actions.unshift( {
+        text: "Donate",
+        isSecondary: true,
+        disabled: false,
+        action: () => showTipsModal(),
+      })
+    }
     return (
       <CustomPortal
         title={"Your assets have been recovered!"}
         description={
           "Check your safe wallet for your retrieved assets. Share your journey and consider to support us with a tip to continue serving the crypto community."
         }
-        buttons={[
-          {
-            text: "Donate",
-            isSecondary: true,
-            disabled: false,
-            action: () => showTipsModal(),
-          },
-          {
-            text: "Finish",
-            disabled: false,
-            isSecondary: false,
-            action: () => finishProcess(),
-          },
-        ]}
+        buttons={actions}
         image={SuccessSvg}
       >
         <div className={styles.shareButtons}>
