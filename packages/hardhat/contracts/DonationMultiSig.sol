@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.17;
 
-import '@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol';
+import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 contract DonationMultiSig {
 	using SafeERC20 for IERC20;
@@ -11,10 +11,7 @@ contract DonationMultiSig {
 	error NotEnoughApprovals();
 	error NewContributorCannotHaveZeroWeight(address proposedContributor);
 	error AlreadyProposed(address proposedContributor);
-	error AlreadyApproved(
-		address proposedContributor,
-		address approver
-	);
+	error AlreadyApproved(address proposedContributor, address approver);
 
 	struct AddCandidate {
 		bool exists;
@@ -36,14 +33,16 @@ contract DonationMultiSig {
 	address[] public contributors;
 	mapping(address => uint32) public weights;
 	uint public totalWeight;
-	uint8 public immutable maximumApprovals;
 
 	modifier onlyContributors() {
-		require(isContributor[msg.sender], "Only contributors can make this call");
+		require(
+			isContributor[msg.sender],
+			"Only contributors can make this call"
+		);
 		_;
 	}
 
-	constructor(address[] memory _contributors, uint32[] memory _weights, uint8 _maximumApprovals) {
+	constructor(address[] memory _contributors, uint32[] memory _weights) {
 		require(
 			_contributors.length == _weights.length,
 			"Array length mismatch"
@@ -54,9 +53,6 @@ contract DonationMultiSig {
 			weights[contributors[i]] = _weights[i];
 			totalWeight += _weights[i];
 		}
-
-		// A proposal always has one approval so the cap should be one less than desired
-		maximumApprovals = _maximumApprovals - 1;
 	}
 
 	fallback() external payable {}
@@ -99,7 +95,9 @@ contract DonationMultiSig {
 
 	function addContributor(address newContributor) external onlyContributors {
 		// If we don't have enough approvals then revert
-		if (!(addProposals[newContributor].approvalCount >= _approvalMinimum())) {
+		if (
+			!(addProposals[newContributor].approvalCount >= _approvalMinimum())
+		) {
 			revert NotEnoughApprovals();
 		}
 
@@ -117,7 +115,9 @@ contract DonationMultiSig {
 	}
 
 	// Removing Contributors
-	function proposeRemoveContributor(address contributor) external onlyContributors {
+	function proposeRemoveContributor(
+		address contributor
+	) external onlyContributors {
 		if (removeProposals[contributor].exists) {
 			revert AlreadyProposed(contributor);
 		}
@@ -125,16 +125,22 @@ contract DonationMultiSig {
 		removeProposals[contributor].approvals[msg.sender] = true;
 	}
 
-	function approveRemoveContributor(address contributor) external onlyContributors {
+	function approveRemoveContributor(
+		address contributor
+	) external onlyContributors {
 		if (removeProposals[contributor].approvals[msg.sender]) {
 			revert AlreadyApproved(contributor, msg.sender);
 		}
 		removeProposals[contributor].approvals[msg.sender] = true;
 	}
 
-	function removeContributor(uint8 contributorIndex) external onlyContributors {
+	function removeContributor(
+		uint8 contributorIndex
+	) external onlyContributors {
 		address contributor = contributors[contributorIndex];
-		if (!(removeProposals[contributor].approvalCount >= _approvalMinimum())) {
+		if (
+			!(removeProposals[contributor].approvalCount >= _approvalMinimum())
+		) {
 			revert NotEnoughApprovals();
 		}
 		// Set that contributors slot to the last contributors address - overwriting the address being removed
@@ -149,13 +155,14 @@ contract DonationMultiSig {
 
 	function _approvalMinimum() internal view returns (uint) {
 		// The number returned is always one less than the actual number desired because every proposal has one implicit approval
-		if (contributors.length > 3) {
+		uint length = contributors.length;
+		// If more than 4 contributors then we only require half of them to sign, rounding up (3/5,3/6,4/7,4/8...)
+		if (length > 4) {
 			// This number is set in the contructor with 1 less than the actual maximum given
-			return maximumApprovals;
+			return (length % 2 == 0 ? length / 2 : (length / 2) + 1) - 1;
 		} else {
-			return contributors.length - 1;
+			return length - 1;
 		}
-
 	}
 
 	function distribute(address token) external onlyContributors {
@@ -169,9 +176,9 @@ contract DonationMultiSig {
 
 			for (uint8 i = 0; i < contributors.length; i++) {
 				uint amount = unitWeiToSend * weights[contributors[i]];
-				(bool success, ) = payable(contributors[i]).call{ value: amount }(
-					""
-				);
+				(bool success, ) = payable(contributors[i]).call{
+					value: amount
+				}("");
 				if (!success) {
 					revert DistributionFailed(contributors[i], token, amount);
 				}
@@ -190,7 +197,5 @@ contract DonationMultiSig {
 				IERC20(token).transfer(contributors[i], amount);
 			}
 		}
-
-		
 	}
 }
