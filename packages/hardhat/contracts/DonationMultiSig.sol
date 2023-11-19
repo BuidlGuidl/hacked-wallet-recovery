@@ -1,11 +1,14 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity ^0.8.17;
+pragma solidity 0.8.22;
 
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 contract DonationMultiSig {
 	using SafeERC20 for IERC20;
 
+	error ConstructorError();
+	error OnlyContributor();
+	error AlreadyContributor();
 	error DistributionFailed(address to, address token, uint amount);
 	error NotWorthSplitting(address token, uint value);
 	error NotEnoughApprovals();
@@ -13,21 +16,15 @@ contract DonationMultiSig {
 	error AlreadyProposed(address proposedContributor);
 	error AlreadyApproved(address proposedContributor, address approver);
 
-	struct AddCandidate {
+	struct Proposal {
 		bool exists;
 		uint32 weight;
 		uint8 approvalCount;
 		mapping(address => bool) approvals;
 	}
 
-	struct RemoveCandidate {
-		bool exists;
-		uint8 approvalCount;
-		mapping(address => bool) approvals;
-	}
-
-	mapping(address => AddCandidate) addProposals;
-	mapping(address => RemoveCandidate) removeProposals;
+	mapping(address => Proposal) public addProposals;
+	mapping(address => Proposal) public removeProposals;
 
 	mapping(address => bool) public isContributor;
 	address[] public contributors;
@@ -35,23 +32,22 @@ contract DonationMultiSig {
 	uint public totalWeight;
 
 	modifier onlyContributors() {
-		require(
-			isContributor[msg.sender],
-			"Only contributors can make this call"
-		);
+		if (!isContributor[msg.sender]) {
+			revert OnlyContributor();
+		}
 		_;
 	}
 
 	constructor(address[] memory _contributors, uint32[] memory _weights) {
-		require(
-			_contributors.length == _weights.length,
-			"Array length mismatch"
-		);
+		if (!(_contributors.length == _weights.length)) {
+			revert ConstructorError();
+		}
 		for (uint8 i = 0; i < _contributors.length; i++) {
 			require(_weights[i] != 0, "Zero weight not allowed");
 			contributors.push(_contributors[i]);
 			weights[contributors[i]] = _weights[i];
 			totalWeight += _weights[i];
+			isContributor[_contributors[i]] = true;
 		}
 	}
 
@@ -64,6 +60,11 @@ contract DonationMultiSig {
 		address newContributor,
 		uint32 weight
 	) external onlyContributors {
+		// Check if the address is already a contributor
+		if (isContributor[newContributor]) {
+			revert AlreadyContributor();
+		}
+
 		if (weight == 0) {
 			revert NewContributorCannotHaveZeroWeight(newContributor);
 		}
@@ -79,6 +80,7 @@ contract DonationMultiSig {
 			for (uint8 i = 0; i < contributors.length; i++) {
 				addProposals[newContributor].approvals[contributors[i]] = false;
 			}
+			addProposals[newContributor].approvalCount = 0;
 		}
 		addProposals[newContributor].approvals[msg.sender] = true;
 		addProposals[newContributor].weight = weight;
@@ -91,6 +93,7 @@ contract DonationMultiSig {
 			revert AlreadyApproved(newContributor, msg.sender);
 		}
 		addProposals[newContributor].approvals[msg.sender] = true;
+		addProposals[newContributor].approvalCount++;
 	}
 
 	function addContributor(address newContributor) external onlyContributors {
@@ -110,7 +113,6 @@ contract DonationMultiSig {
 		for (uint8 i = 0; i < contributors.length; i++) {
 			addProposals[newContributor].approvals[contributors[i]] = false;
 		}
-		// addProposals[newContributor].exists = false;
 		addProposals[newContributor].weight = 0;
 	}
 
@@ -132,6 +134,7 @@ contract DonationMultiSig {
 			revert AlreadyApproved(contributor, msg.sender);
 		}
 		removeProposals[contributor].approvals[msg.sender] = true;
+		removeProposals[contributor].approvalCount++;
 	}
 
 	function removeContributor(
@@ -194,7 +197,10 @@ contract DonationMultiSig {
 
 			for (uint8 i = 0; i < contributors.length; i++) {
 				uint amount = unitWeiToSend * weights[contributors[i]];
-				IERC20(token).transfer(contributors[i], amount);
+				bool success = IERC20(token).transfer(contributors[i], amount);
+				if (!success) {
+					revert DistributionFailed(contributors[i], token, amount);
+				}
 			}
 		}
 	}
