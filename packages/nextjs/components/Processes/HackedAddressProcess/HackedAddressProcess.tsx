@@ -39,7 +39,7 @@ export const HackedAddressProcess = ({ isVisible, onSubmit }: IProps) => {
           />
            <div className="mt-4" />
           <h2 className={`${styles.text} text-secondary-content`}>Let&apos;s search what assets we can recover</h2>
-          <h2 className={`${styles.text} text-secondary-content`}>Enter your hacked address:</h2>
+          <h2 className={`${styles.text} text-secondary-content`}>Enter your hacked address below:</h2>
           <AddressInput
             name="addressInput"
             value={hackedAddress}
