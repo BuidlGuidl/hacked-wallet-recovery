@@ -28,19 +28,18 @@ export const HackedAddressProcess = ({ isVisible, onSubmit }: IProps) => {
           exit={{ opacity: 0 }}
           className={styles.container}
         >
-          <h1 className={styles.title}>Welcome to <br/>Hacked Wallet Recovery</h1>
+          <h1 className={styles.title}>
+            Welcome to <br />
+            Hacked Wallet Recovery
+          </h1>
           <Image
             className={styles.illustration}
             src={IllustrationSvg}
             alt="An ethereum icon with nfts and tokens around"
           />
            <div className="mt-4" />
-          <h2 className={`${styles.text} text-secondary-content`}>
-            Let's search what assets can we recover
-          </h2>
-          <h2 className={`${styles.text} text-secondary-content`}>
-            Introduce your hacked address
-          </h2>
+          <h2 className={`${styles.text} text-secondary-content`}>Let&apos;s search what assets we can recover</h2>
+          <h2 className={`${styles.text} text-secondary-content`}>Enter your hacked address below:</h2>
           <AddressInput
             name="addressInput"
             value={hackedAddress}
