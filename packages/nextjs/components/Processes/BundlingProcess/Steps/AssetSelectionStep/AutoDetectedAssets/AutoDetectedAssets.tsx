@@ -12,7 +12,9 @@ export const AutoDetectedAssets = ({ isLoading, selectedAssets, selectAsset, acc
   if (!isLoading && accountAssets.length === 0) {
     return (
       <div className={styles.assetList}>
-        <span className={`${styles.noAssets} text-secondary-content`}>We don't have detected any asset</span>
+        <span className={`${styles.noAssets} text-secondary-content`}>
+          We can&apos;t find any assets in this wallet. Try manually adding them if you are certain they exist.
+        </span>
       </div>
     );
   }
