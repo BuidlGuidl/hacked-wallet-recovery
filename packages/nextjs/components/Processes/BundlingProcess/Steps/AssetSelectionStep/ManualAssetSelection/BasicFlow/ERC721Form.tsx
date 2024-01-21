@@ -41,10 +41,21 @@ export const ERC721Form = ({ hackedAddress, safeAddress, addAsset, close }: ITok
       return;
     }
 
+    let symbol = "???";
+    try {
+      symbol = (await publicClient.readContract({
+        address: contractAddress as `0x${string}`,
+        abi: ERC721_ABI,
+        functionName: "symbol",
+      })) as string;
+    } catch (err) {
+      console.log(err);
+    }
+
     const newErc721Tx: ERC721Tx = {
       type: "erc721",
-      info: `NFT recovery for tokenId ${tokenId}`,
-      symbol: "changeme",
+      info: `ERC721 - ${symbol} #${tokenId}`,
+      symbol,
       tokenId: tokenId,
       toEstimate: {
         from: hackedAddress as `0x${string}`,
@@ -56,7 +67,7 @@ export const ERC721Form = ({ hackedAddress, safeAddress, addAsset, close }: ITok
         ]) as `0x${string}`,
       },
     };
-    addAsset(newErc721Tx);
+    addAsset({ tx: newErc721Tx });
   };
   return (
     <div className={styles.containerBasic}>
