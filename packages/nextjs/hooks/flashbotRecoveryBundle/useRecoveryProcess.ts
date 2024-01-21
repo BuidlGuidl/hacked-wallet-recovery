@@ -9,20 +9,24 @@ import { useAccount, usePublicClient, useWalletClient } from "wagmi";
 import { ERC20Tx, ERC721Tx, ERC1155Tx, RecoveryTx } from "~~/types/business";
 import { RecoveryProcessStatus } from "~~/types/enums";
 import { DUMMY_ADDRESS, ERC20_ABI, ERC721_ABI, ERC1155_ABI } from "~~/utils/constants";
-import { getTargetNetwork } from "~~/utils/scaffold-eth";
 import { BLOCKS_IN_THE_FUTURE } from "~~/utils/constants";
+import { getTargetNetwork } from "~~/utils/scaffold-eth";
 
 const erc721Interface = new ethers.utils.Interface(ERC721_ABI);
 const erc1155Interface = new ethers.utils.Interface(ERC1155_ABI);
 const erc20Interface = new ethers.utils.Interface(ERC20_ABI);
 
-interface IStartProcessPops {
+interface IStartProcessProps {
   safeAddress: string;
-  modifyBundleId: (arg: string) => void;
   totalGas: BigNumber;
   hackedAddress: string;
   transactions: RecoveryTx[];
   currentBundleId: string;
+}
+
+interface IChangeRPCProps {
+  modifyBundleId: (bundleId: string) => void;
+  setRpcParams: (params: any) => void;
 }
 
 const flashbotSigner = ethers.Wallet.createRandom();
@@ -107,18 +111,22 @@ export const useRecoveryProcess = () => {
       setStepActive(RecoveryProcessStatus.NO_SAFE_ACCOUNT);
       return false;
     }
-    setStepActive(RecoveryProcessStatus.SWITCH_RPC_AND_PAY_GAS);
     return true;
   };
 
-  const changeFlashbotNetwork = async () => {
-    const newBundleUuid = v4();
-    await addRelayRPC(newBundleUuid);
-    return newBundleUuid;
+  const changeFlashbotNetwork = async ({ modifyBundleId, setRpcParams }: IChangeRPCProps) => {
+    const bundleId = v4();
+    const { result, params } = await addRelayRPC(bundleId);
+    modifyBundleId(bundleId);
+    if (!result) {
+      setRpcParams(params);
+      return false;
+    }
+    return true;
   };
 
   const getEstimatedTxFees = async () => {
-    const block = await infuraProvider!.getBlock("latest");
+    const block = await infuraProvider?.getBlock("latest");
     if (block) {
       const maxBaseFeeInFutureBlock = FlashbotsBundleProvider.getMaxBaseFeeInFutureBlock(
         block.baseFeePerGas as BigNumber,
@@ -132,7 +140,7 @@ export const useRecoveryProcess = () => {
 
   const payTheGas = async (totalGas: BigNumber, hackedAddress: string) => {
     const { maxBaseFeeInFutureBlock, priorityFee } = await getEstimatedTxFees();
-    await walletClient!.sendTransaction({
+    await walletClient?.sendTransaction({
       to: hackedAddress as `0x${string}`,
       value: BigInt(totalGas.toString()),
       type: "eip1559",
@@ -176,8 +184,7 @@ export const useRecoveryProcess = () => {
             maxPriorityFeePerGas: BigInt(maxPriorityFeePerGas as string),
             gas: BigInt(gas as string),
           };
-          console.log(readyToSignTx);
-          await walletClient!.sendTransaction(readyToSignTx);
+          await walletClient?.sendTransaction(readyToSignTx);
         }
       }
       setGasCovered(false);
@@ -290,6 +297,7 @@ export const useRecoveryProcess = () => {
         };
         return newErc721Tx;
       }
+
       if (item.type === "erc1155") {
         const data = item as ERC1155Tx;
         const newErc1155Tx: ERC1155Tx = {
@@ -312,26 +320,43 @@ export const useRecoveryProcess = () => {
         };
         return newErc1155Tx;
       }
+
       return item;
     });
   };
 
   const startRecoveryProcess = async ({
     safeAddress,
-    modifyBundleId,
     totalGas,
     currentBundleId,
     hackedAddress,
     transactions,
-  }: IStartProcessPops) => {
+    modifyBundleId,
+    setRpcParams,
+  }: IStartProcessProps & IChangeRPCProps) => {
     const isValid = validateBundleIsReady(safeAddress);
     if (!isValid) {
       return;
     }
+    //////// Enforce switching to flashbots RPC
+    setStepActive(RecoveryProcessStatus.CHANGE_RPC);
+    const changed = await changeFlashbotNetwork({
+      modifyBundleId,
+      setRpcParams,
+    });
+    if (changed) {
+      await signTransactionsStep({ totalGas, currentBundleId, hackedAddress, transactions });
+    }
+  };
+
+  const signTransactionsStep = async ({
+    totalGas,
+    currentBundleId,
+    hackedAddress,
+    transactions,
+  }: Pick<IStartProcessProps, "totalGas" | "currentBundleId" | "hackedAddress" | "transactions">) => {
+    setStepActive(RecoveryProcessStatus.PAY_GAS);
     try {
-      ////////// Create new bundle uuid & add corresponding RPC 'subnetwork' to Metamask
-      const bundleId = await changeFlashbotNetwork();
-      modifyBundleId(bundleId);
       setStepActive(RecoveryProcessStatus.INCREASE_PRIORITY_FEE);
       // ////////// Cover the envisioned total gas fee from safe account
       await payTheGas(totalGas, hackedAddress);
@@ -339,40 +364,37 @@ export const useRecoveryProcess = () => {
       return;
     } catch (e) {
       resetStatus();
-      showError(
-        `Error while adding a custom RPC and signing the funding transaction with the safe account. Error: ${e}`,
-      );
+      showError(`Error while signing the funding transaction with the safe account. Error: ${e}`);
     }
   };
 
   const addRelayRPC = async (bundleUuid: string) => {
+    let result = null;
+    const params = {
+      chainId: `0x${targetNetwork.network == "goerli" ? 5 : 1}`,
+      chainName: "Hacked Wallet Recovery RPC",
+      nativeCurrency: {
+        name: "ETH",
+        symbol: "ETH",
+        decimals: 18,
+      },
+      rpcUrls: [`https://rpc${targetNetwork.network == "goerli" ? "-goerli" : ""}.flashbots.net?bundle=${bundleUuid}`],
+      blockExplorerUrls: [`https://${targetNetwork.network == "goerli" ? "goerli." : ""}etherscan.io`],
+    };
     if (!window.ethereum || !window.ethereum.request) {
       console.error("MetaMask Ethereum provider is not available");
-      return;
+      return { result, params };
     }
 
     try {
-      await window.ethereum.request({
+      result = await window.ethereum.request({
         method: "wallet_addEthereumChain",
-        params: [
-          {
-            chainId: `0x${targetNetwork.network == "goerli" ? 5 : 1}`,
-            chainName: "Hacked Wallet Recovery RPC",
-            nativeCurrency: {
-              name: "ETH",
-              symbol: "ETH",
-              decimals: 18,
-            },
-            rpcUrls: [
-              `https://rpc${targetNetwork.network == "goerli" ? "-goerli" : ""}.flashbots.net?bundle=${bundleUuid}`,
-            ],
-            blockExplorerUrls: [`https://${targetNetwork.network == "goerli" ? "goerli." : ""}etherscan.io`],
-          },
-        ],
+        params: [params, address],
       });
     } catch (error) {
-      console.error("Failed to add custom RPC network to MetaMask:", error);
+      console.error("Failed to add custom RPC network to wallet automatically, showing rpc details", error);
     }
+    return { result, params };
   };
 
   const showTipsModal = () => {
@@ -384,7 +406,9 @@ export const useRecoveryProcess = () => {
     sentBlock,
     sentTxHash,
     blockCountdown,
+    changeFlashbotNetwork,
     startRecoveryProcess,
+    signTransactionsStep,
     validateBundleIsReady,
     signRecoveryTransactions,
     generateCorrectTransactions,

@@ -7,7 +7,6 @@ import { CustomButton } from "~~/components/CustomButton/CustomButton";
 import { CustomConnectButton } from "~~/components/CustomConnectButton/CustomConnectButton";
 import { CustomPortal } from "~~/components/CustomPortal/CustomPortal";
 import { InputBase } from "~~/components/scaffold-eth";
-import { useGasEstimation } from "~~/hooks/flashbotRecoveryBundle/useGasEstimation";
 import { useShowError } from "~~/hooks/flashbotRecoveryBundle/useShowError";
 import { useAccountBalance } from "~~/hooks/scaffold-eth";
 import ClockSvg from "~~/public/assets/flashbotRecovery/clock.svg";
@@ -24,10 +23,23 @@ import TwitterSvg from "~~/public/assets/flashbotRecovery/twitter.svg";
 import { RecoveryProcessStatus } from "~~/types/enums";
 import { getTargetNetwork } from "~~/utils/scaffold-eth";
 
+interface IRPCParams {
+  chainId: string;
+  chainName: string;
+  nativeCurrency: {
+    name: string;
+    symbol: string;
+    decimals: number;
+  };
+  rpcUrls: string[];
+  blockExplorerUrls: string[];
+}
+
 interface IProps {
   recoveryStatus: RecoveryProcessStatus;
-  startSigning: (connectedAddress:string) => void;
+  startSigning: (connectedAddress: string) => void;
   finishProcess: () => void;
+  signTransactionsStep: () => void;
   showTipsModal: () => void;
   startProcess: (arg: string) => void;
   connectedAddress: string | undefined;
@@ -38,12 +50,14 @@ interface IProps {
   blockCountdown: number;
   isDonationLoading: boolean;
   totalGasEstimate: BigNumber;
+  rpcParams: IRPCParams | undefined;
 }
 
 export const RecoveryProcess = ({
   recoveryStatus,
   startSigning,
   startProcess,
+  signTransactionsStep,
   finishProcess,
   showTipsModal,
   blockCountdown,
@@ -53,12 +67,13 @@ export const RecoveryProcess = ({
   isDonationLoading,
   hackedAddress,
   totalGasEstimate,
+  rpcParams,
 }: IProps) => {
   const { showError } = useShowError();
-  const {address} =useAccount()
+  const { address } = useAccount();
   const { balance } = useAccountBalance(address);
   const networkName = getTargetNetwork().name;
-  const hasEnoughtEth = !!balance ? balance > parseFloat(donationValue) : false;
+  const hasEnoughEth = !!balance ? balance > parseFloat(donationValue) : false;
   const showDonationsButton = process.env.NEXT_PUBLIC_SHOW_DONATIONS ?? false;
   if (recoveryStatus == RecoveryProcessStatus.INITIAL) {
     return <></>;
@@ -104,13 +119,59 @@ export const RecoveryProcess = ({
     );
   }
 
-  if (recoveryStatus == RecoveryProcessStatus.SWITCH_RPC_AND_PAY_GAS) {
+  if (recoveryStatus == RecoveryProcessStatus.CHANGE_RPC) {
+    // If RPC params are provided, we need to give instructions for switching to the RPC
+    if (rpcParams) {
+      const { rpcUrls } = rpcParams;
+      const url = rpcUrls[0];
+      const chainId = Number(rpcParams.chainId);
+      return (
+        <CustomPortal
+          title={"Switch Network"}
+          description={
+            "Manually add the following network to your wallet. This is a crucial step to ensure the hacker doesn't see your funds until your recovery is complete."
+          }
+          buttons={[
+            {
+              text: "I have added the new network",
+              disabled: false,
+              action: signTransactionsStep,
+            },
+          ]}
+          image={HackedWalletSvg}
+        >
+          <div className={styles.rpcContainer}>
+            <div className={styles.rpc}>
+              <p className={styles.rpcTitle}>Network Name</p>
+              <p className="">Hacked Wallet Recovery RPC</p>
+              <p className={styles.rpcTitle}>Network RPC URL</p>
+              <p className="">{url}</p>
+              <p className={styles.rpcTitle}>Chain ID</p>
+              <p className="">{chainId}</p>
+              <p className={styles.rpcTitle}>Currency Symbol</p>
+              <p className="">ETH</p>
+            </div>
+          </div>
+        </CustomPortal>
+      );
+    } else {
+      return (
+        <CustomPortal
+          title={"Switching Network"}
+          description={
+            "Now we will switch to a shielded network to recover your assets without the hacker noticing. Approve the network change in your wallet."
+          }
+          image={SwitchNetworkSvg}
+        />
+      );
+    }
+  }
+
+  if (recoveryStatus == RecoveryProcessStatus.PAY_GAS) {
     return (
       <CustomPortal
-        title={"Switching Network"}
-        description={
-          "Now we will switch to a shielded network to recover your assets without the hacker noticing. Approve the network change in your wallet."
-        }
+        title={"Send Gas"}
+        description={"Now we will send a transaction to fund the hacked wallet so it can recover the assets."}
         image={SwitchNetworkSvg}
       />
     );
@@ -227,7 +288,7 @@ export const RecoveryProcess = ({
       buttons={[
         {
           text: isDonationLoading ? "Sending..." : "Donate",
-          disabled: isDonationLoading || !hasEnoughtEth || !address ,
+          disabled: isDonationLoading || !hasEnoughEth || !address ,
           action: () => finishProcess(),
         },
       ]}
@@ -260,15 +321,15 @@ interface IConnectSafeStepProps {
 export const ConnectSafeStep = ({ hackedAddress, startProcess, totalGasEstimate }: IConnectSafeStepProps) => {
   const { address } = useAccount();
   const { balance } = useAccountBalance(address);
-  const hasEnoughtEth = !!balance && balance > parseFloat(ethers.utils.formatEther(totalGasEstimate.toString()));
-  const isConfirmBlocked = !address || address == hackedAddress || !hasEnoughtEth;
+  const hasEnoughEth = !!balance && balance > parseFloat(ethers.utils.formatEther(totalGasEstimate.toString()));
+  const isConfirmBlocked = !address || address == hackedAddress || !hasEnoughEth;
   return (
     <div className={styles.buttonContainer}>
       <CustomConnectButton />
       <div className="mt-4"></div>
       {!!address ? (
         <>
-          {!hasEnoughtEth ? (
+          {!hasEnoughEth ? (
             <p className={`text-center text-secondary-content ${styles.warning}`}>
               This wallet doesn't have enough ETH to pay for the transactions.
             </p>

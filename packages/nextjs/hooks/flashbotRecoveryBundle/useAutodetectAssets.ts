@@ -79,7 +79,7 @@ export const useAutodetectAssets = () => {
 
   const getAutodetectedAssets = async (
     hackedAddress: string,
-    safeAddress: string,
+    safeAddress: string = "0xFFfFfFffFFfffFFfFFfFFFFFffFFFffffFfFFFfF",
     forceFetch: boolean = false,
   ): Promise<IWrappedRecoveryTx[] | undefined> => {
     if (autoDetectedAssets[hackedAddress] && autoDetectedAssets[hackedAddress].length > 0 && !forceFetch) {
