@@ -5,7 +5,7 @@ import {
   RelayResponseError,
 } from "@flashbots/ethers-provider-bundle";
 import { ethers } from "ethers";
-
+export const maxDuration = 240
 const mainnetProvider = new ethers.providers.InfuraProvider(1, "416f5398fa3d4bb389f18fd3fa5fb58c");
 const flashbotProvider = await FlashbotsBundleProvider.create(
   mainnetProvider,
