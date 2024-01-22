@@ -33,7 +33,7 @@ export interface ERC721Tx extends ExtendedUnsignedTx {
 }
 
 export interface ERC1155Tx extends ExtendedUnsignedTx {
-  uri: string;
+  symbol: string;
   tokenIds: string[];
   amounts: string[];
 }

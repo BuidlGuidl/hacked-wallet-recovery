@@ -23,18 +23,38 @@
   margin-bottom: 12px;
 }
 .eth{
-    position: absolute;
-    bottom: 12px;
-    right: 14px;
+  position: absolute;
+  bottom: 12px;
+  right: 14px;
 }
 
 .buttonContainer button{
   display: flex;
-
-height: 40px;
-padding: 0px 48px;
+  height: 40px;
+  padding: 0px 48px;
 }
 
 .warning{
   font-size: 14px;
+}
+
+.rpcContainer {
+  width: 80%;
+  position: relative;
+}
+
+.rpc p {
+  font-size: 16px;
+  font-style: normal;
+  line-height: normal;
+  margin-bottom: 2px;
+  margin-top: 2px;
+}
+
+.rpcTitle {
+  font-weight: 800;
+}
+
+.rpcTitle + p {
+  margin-bottom: 16px;
 }

@@ -4,7 +4,7 @@ import BackSvg from "../../../../../../../public/assets/flashbotRecovery/back.sv
 import styles from "../manualAssetSelection.module.css";
 import { BigNumber, ethers } from "ethers";
 import { isAddress } from "viem";
-import { useContractRead } from "wagmi";
+import { usePublicClient } from "wagmi";
 import { CustomButton } from "~~/components/CustomButton/CustomButton";
 import { ITokenForm } from "~~/components/Processes/BundlingProcess/Steps/AssetSelectionStep/ManualAssetSelection/BasicFlow/types";
 import { AddressInput } from "~~/components/scaffold-eth";
@@ -18,47 +18,58 @@ const erc20Interface = new ethers.utils.Interface(ERC20_ABI);
 export const ERC20Form = ({ hackedAddress, safeAddress, addAsset, close }: ITokenForm) => {
   const [contractAddress, setContractAddress] = useState<string>("");
   const { showError } = useShowError();
-  let erc20Balance: string = "NO INFO";
-  try {
-    let { data } = useContractRead({
-      chainId: getTargetNetwork().id,
-      functionName: "balanceOf",
-      address: contractAddress as `0x${string}`,
-      abi: ERC20_ABI,
-      watch: true,
-      args: [hackedAddress],
-    });
-    if (data) {
-      erc20Balance = BigNumber.from(data).toString();
-      if (erc20Balance == "0") erc20Balance = "NO INFO";
-    }
-  } catch (e) {
-    // Most probably the contract address is not valid as user is
-    // still typing, so ignore.
-  }
 
-  const addErc20TxToBasket = (balance: string) => {
+  const publicClient = usePublicClient({ chainId: getTargetNetwork().id });
+
+  const addErc20TxToBasket = async () => {
     if (!isAddress(contractAddress)) {
       showError("Provide a contract first");
       return;
     }
-    if (balance == "NO INFO") {
+
+    let balance = 0;
+    try {
+      balance = (await publicClient.readContract({
+        address: contractAddress as `0x${string}`,
+        abi: ERC20_ABI,
+        functionName: "balanceOf",
+        args: [hackedAddress],
+      })) as number;
+    } catch (err) {
+      console.log(err);
+    }
+
+    if (balance == 0) {
       showError("Hacked account has no balance in given erc20 contract");
       return;
+    }
+
+    let symbol = "ERC20";
+    try {
+      symbol = (await publicClient.readContract({
+        address: contractAddress as `0x${string}`,
+        abi: ERC20_ABI,
+        functionName: "symbol",
+      })) as string;
+    } catch (err) {
+      console.log(err);
     }
 
     const newErc20tx: ERC20Tx = {
       type: "erc20",
       info: "changeme",
-      symbol: "changeme",
-      amount: balance,
+      symbol,
+      amount: balance.toString(),
       toEstimate: {
         from: hackedAddress as `0x${string}`,
         to: contractAddress as `0x${string}`,
-        data: erc20Interface.encodeFunctionData("transfer", [safeAddress, BigNumber.from(balance)]) as `0x${string}`,
+        data: erc20Interface.encodeFunctionData("transfer", [
+          safeAddress,
+          BigNumber.from(balance.toString()),
+        ]) as `0x${string}`,
       },
     };
-    addAsset(newErc20tx);
+    addAsset({ tx: newErc20tx });
   };
 
   return (
@@ -76,7 +87,7 @@ export const ERC20Form = ({ hackedAddress, safeAddress, addAsset, close }: IToke
         onChange={e => setContractAddress(e)}
       />
       <div className={styles.bottom}></div>
-      <CustomButton type="btn-primary" text={"Add"} onClick={() => addErc20TxToBasket(erc20Balance)} />
+      <CustomButton type="btn-primary" text={"Add"} onClick={() => addErc20TxToBasket()} />
     </div>
   );
 };

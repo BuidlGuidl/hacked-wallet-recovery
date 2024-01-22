@@ -17,18 +17,32 @@ import { BundlingSteps, RecoveryProcessStatus } from "~~/types/enums";
 import { CONTRACT_ADDRESS, DUMMY_ADDRESS } from "~~/utils/constants";
 import { parseEther } from "viem";
 
+interface IRPCParams {
+  chainId: string;
+  chainName: string;
+  nativeCurrency: {
+    name: string;
+    symbol: string;
+    decimals: number;
+  };
+  rpcUrls: string[];
+  blockExplorerUrls: string[];
+}
+
 const Home: NextPage = () => {
   const { isConnected: walletConnected, address: connectedAddress } = useAccount();
   const [safeAddress, setSafeAddress] = useState(DUMMY_ADDRESS);
   const [hackedAddress, setHackedAddress] = useLocalStorage<string>("hackedAddress", "");
   const [totalGasEstimate, setTotalGasEstimate] = useState<BigNumber>(BigNumber.from("0"));
+  const [rpcParams, setRpcParams] = useState<IRPCParams>();
   const [isOnBasket, setIsOnBasket] = useState(false);
   const [currentBundleId, setCurrentBundleId] = useLocalStorage<string>("bundleUuid", "");
-  const { error, resetError,isFinalProcessError} = useShowError();
+  const { error, resetError, isFinalProcessError } = useShowError();
   const [donationValue, setDonationValue] = useState<string>("");
   const {
     data: processStatus,
     startRecoveryProcess,
+    signTransactionsStep,
     signRecoveryTransactions,
     blockCountdown,
     showTipsModal,
@@ -46,23 +60,39 @@ const Home: NextPage = () => {
   const { data, isLoading:isDonationLoading, isSuccess:isDonationSuccess, sendTransaction } =
     useSendTransaction(config)
 
-  
   const startSigning = (address:string) => {
-    const transformedTransactions = generateCorrectTransactions({ transactions:unsignedTxs, safeAddress:address, hackedAddress });
+    console.log("DEBUG: startSigning", unsignedTxs);
+    const transformedTransactions = generateCorrectTransactions({
+      transactions: unsignedTxs,
+      safeAddress: address,
+      hackedAddress,
+    });
     setUnsignedTxs(transformedTransactions);
     signRecoveryTransactions(hackedAddress, unsignedTxs, currentBundleId, false);
   };
+
   const startRecovery = (safe: string) => {
+    console.log("DEBUG: startRecovery", unsignedTxs);
     setSafeAddress(safe);
-    const transformedTransactions = generateCorrectTransactions({ transactions:unsignedTxs, safeAddress:safe, hackedAddress });
+    const transformedTransactions = generateCorrectTransactions({ transactions: unsignedTxs, safeAddress: safe, hackedAddress });
     setUnsignedTxs(transformedTransactions);
     startRecoveryProcess({
       safeAddress: safe,
-      modifyBundleId: setCurrentBundleId,
       totalGas: totalGasEstimate,
       hackedAddress,
       currentBundleId,
       transactions: transformedTransactions,
+      modifyBundleId: setCurrentBundleId,
+      setRpcParams,
+    });
+  };
+
+  const signTransactions = async () => {
+    await signTransactionsStep({
+      totalGas: totalGasEstimate,
+      hackedAddress,
+      currentBundleId,
+      transactions: unsignedTxs,
     });
   };
   const getActiveStep = () => {
@@ -89,7 +119,8 @@ const Home: NextPage = () => {
   const cleanApp = () => {
     localStorage.clear();
     window.location.reload();
-  }
+  };
+
   const finishProcess = () => {
     if(!donationValue){
       cleanApp()
@@ -140,6 +171,7 @@ const Home: NextPage = () => {
         <RecoveryProcess
           recoveryStatus={processStatus}
           donationValue={donationValue}
+          signTransactionsStep={signTransactions}
           setDonationValue={(atm) => setDonationValue(atm)}
           isDonationLoading={isDonationLoading}
           finishProcess={() => finishProcess()}
@@ -151,19 +183,20 @@ const Home: NextPage = () => {
           connectedAddress={connectedAddress}
           safeAddress={safeAddress}
           hackedAddress={hackedAddress}
+          rpcParams={rpcParams}
         />
-        
+
         {isFinalProcessError && error != "" ? (
           <CustomPortal
             close={() => resetError()}
-            title={"Something wrong has happend"}
+            title={"Something went wrong"}
             description={error}
             image={GasSvg}
           />
         ) : error != "" ? (
           <CustomPortal
             close={() => resetError()}
-            title={"Something wrong has happend"}
+            title={"Something went wrong"}
             description={error}
             image={isFinalProcessError ? GasSvg:ErrorSvg}
           />
