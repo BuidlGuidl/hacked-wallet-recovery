@@ -3,8 +3,8 @@ export const BLOCKS_IN_THE_FUTURE: { [i: number]: number } = {
   5: 30,
 };
 
-export const DUMMY_ADDRESS = process.env.NEXT_PUBLIC_DUMMY_ADDRESS ?? "";
-export const CONTRACT_ADDRESS ="0xc6f04bb809EA0B01ceB4755a1342879fC77E10f3";
+export const DUMMY_ADDRESS = process.env.NEXT_PUBLIC_DUMMY_ADDRESS ?? "0xFFfFfFffFFfffFFfFFfFFFFFffFFFffffFfFFFfF";
+export const CONTRACT_ADDRESS = "0xc6f04bb809EA0B01ceB4755a1342879fC77E10f3";
 export const ERC721_ABI = [
   {
     constant: true,

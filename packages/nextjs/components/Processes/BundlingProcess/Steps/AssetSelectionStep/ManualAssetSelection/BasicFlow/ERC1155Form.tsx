@@ -53,10 +53,21 @@ export const ERC1155Form = ({ hackedAddress, safeAddress, addAsset, close }: ITo
       const erc1155TokenIds = currentIds.map(t => t.toString());
       const erc1155TokenBalances = balances.map(t => t.toString());
 
+      let symbol = "???";
+      try {
+        symbol = (await publicClient.readContract({
+          address: contractAddress as `0x${string}`,
+          abi: ERC1155_ABI,
+          functionName: "symbol",
+        })) as string;
+      } catch (err) {
+        console.log(err);
+      }
+
       const newErc1155Tx: ERC1155Tx = {
         type: "erc1155",
-        info: `ERC1155 for tokenIds ${erc1155TokenIds.toString()}`,
-        uri: "changeme",
+        info: `ERC1155 - ${symbol}`,
+        symbol,
         tokenIds: erc1155TokenIds,
         amounts: erc1155TokenBalances,
         toEstimate: {
@@ -71,7 +82,7 @@ export const ERC1155Form = ({ hackedAddress, safeAddress, addAsset, close }: ITo
           ]) as `0x${string}`,
         },
       };
-      addAsset(newErc1155Tx);
+      addAsset({ tx: newErc1155Tx });
     } catch (e) {
       console.error(e);
       showError(`Couldn't read the contract. See the console for the error.`);

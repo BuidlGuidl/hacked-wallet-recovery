@@ -62,7 +62,7 @@ export const useGasEstimation = () => {
       return totalGasCost.mul(gasPrice);
     } catch (e) {
       showError(
-        "Error estimating gas prices. Something can be wrong with one of the transactions. Check the console and remove problematic tx.",
+        "Error estimating gas prices. Something may be wrong with one of the transactions. Check the console for more information on the problematic transaction.",
       );
       console.error(e);
       return BigNumber.from("0");
