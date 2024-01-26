@@ -53,12 +53,12 @@ export const useAutodetectAssets = () => {
       await Promise.all([
         alchemy.core.getAssetTransfers({
           fromAddress: hackedAddress,
-          excludeZeroValue: true,
+          excludeZeroValue: false,
           category: [AssetTransfersCategory.ERC20, AssetTransfersCategory.ERC721, AssetTransfersCategory.ERC1155],
         }),
         alchemy.core.getAssetTransfers({
           toAddress: hackedAddress,
-          excludeZeroValue: true,
+          excludeZeroValue: false,
           category: [AssetTransfersCategory.ERC20, AssetTransfersCategory.ERC721, AssetTransfersCategory.ERC1155],
         }),
       ])
