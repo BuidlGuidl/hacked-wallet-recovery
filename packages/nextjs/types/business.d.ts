@@ -4,6 +4,7 @@ export interface CoreTxToEstimate {
   from: `0x${string}`;
   to: `0x${string}`;
   data: `0x${string}`;
+  value?: string | bigint;
 }
 
 export interface CoreTxToSign extends CoreTxToEstimate {
