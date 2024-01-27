@@ -53,13 +53,13 @@ export const useAutodetectAssets = () => {
       await Promise.all([
         alchemy.core.getAssetTransfers({
           fromAddress: hackedAddress,
-          excludeZeroValue: false,
-          category: [AssetTransfersCategory.ERC20, AssetTransfersCategory.ERC721, AssetTransfersCategory.ERC1155, AssetTransfersCategory.EXTERNAL, AssetTransfersCategory.INTERNAL],
+          excludeZeroValue: true,
+          category: [AssetTransfersCategory.ERC20, AssetTransfersCategory.ERC721, AssetTransfersCategory.ERC1155],
         }),
         alchemy.core.getAssetTransfers({
           toAddress: hackedAddress,
-          excludeZeroValue: false,
-          category: [AssetTransfersCategory.ERC20, AssetTransfersCategory.ERC721, AssetTransfersCategory.ERC1155, AssetTransfersCategory.EXTERNAL, AssetTransfersCategory.INTERNAL],
+          excludeZeroValue: true,
+          category: [AssetTransfersCategory.ERC20, AssetTransfersCategory.ERC721, AssetTransfersCategory.ERC1155],
         }),
       ])
     )
@@ -108,8 +108,6 @@ export const useAutodetectAssets = () => {
           erc721transfers.push(tx);
         } else if (tx.category == AssetTransfersCategory.ERC1155) {
           erc1155transfers.push(tx);
-        } else {
-          console.log(`Unknown asset transfer category: ${tx.category}`, tx);
         }
       });
 
