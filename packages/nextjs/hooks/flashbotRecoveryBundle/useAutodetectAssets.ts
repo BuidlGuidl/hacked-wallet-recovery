@@ -54,12 +54,12 @@ export const useAutodetectAssets = () => {
         alchemy.core.getAssetTransfers({
           fromAddress: hackedAddress,
           excludeZeroValue: false,
-          category: [AssetTransfersCategory.ERC20, AssetTransfersCategory.ERC721, AssetTransfersCategory.ERC1155],
+          category: [AssetTransfersCategory.ERC20, AssetTransfersCategory.ERC721, AssetTransfersCategory.ERC1155, AssetTransfersCategory.INTERNAL],
         }),
         alchemy.core.getAssetTransfers({
           toAddress: hackedAddress,
           excludeZeroValue: false,
-          category: [AssetTransfersCategory.ERC20, AssetTransfersCategory.ERC721, AssetTransfersCategory.ERC1155],
+          category: [AssetTransfersCategory.ERC20, AssetTransfersCategory.ERC721, AssetTransfersCategory.ERC1155, AssetTransfersCategory.INTERNAL],
         }),
       ])
     )
@@ -108,6 +108,8 @@ export const useAutodetectAssets = () => {
           erc721transfers.push(tx);
         } else if (tx.category == AssetTransfersCategory.ERC1155) {
           erc1155transfers.push(tx);
+        } else if (tx.category == AssetTransfersCategory.INTERNAL) {
+          console.log("Internal tx detected. Ignoring.", tx);
         }
       });
 
