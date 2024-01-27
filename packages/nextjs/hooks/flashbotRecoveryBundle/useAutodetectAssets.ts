@@ -54,12 +54,12 @@ export const useAutodetectAssets = () => {
         alchemy.core.getAssetTransfers({
           fromAddress: hackedAddress,
           excludeZeroValue: false,
-          category: [AssetTransfersCategory.ERC20, AssetTransfersCategory.ERC721, AssetTransfersCategory.ERC1155, AssetTransfersCategory.INTERNAL],
+          category: [AssetTransfersCategory.ERC20, AssetTransfersCategory.ERC721, AssetTransfersCategory.ERC1155, AssetTransfersCategory.EXTERNAL, AssetTransfersCategory.INTERNAL],
         }),
         alchemy.core.getAssetTransfers({
           toAddress: hackedAddress,
           excludeZeroValue: false,
-          category: [AssetTransfersCategory.ERC20, AssetTransfersCategory.ERC721, AssetTransfersCategory.ERC1155, AssetTransfersCategory.INTERNAL],
+          category: [AssetTransfersCategory.ERC20, AssetTransfersCategory.ERC721, AssetTransfersCategory.ERC1155, AssetTransfersCategory.EXTERNAL, AssetTransfersCategory.INTERNAL],
         }),
       ])
     )
@@ -108,8 +108,8 @@ export const useAutodetectAssets = () => {
           erc721transfers.push(tx);
         } else if (tx.category == AssetTransfersCategory.ERC1155) {
           erc1155transfers.push(tx);
-        } else if (tx.category == AssetTransfersCategory.INTERNAL) {
-          console.log("Internal tx detected. Ignoring.", tx);
+        } else {
+          console.log(`Unknown asset transfer category: ${tx.category}`, tx);
         }
       });
 
@@ -166,31 +166,41 @@ export const useAutodetectAssets = () => {
       // Now get the balances & owned NFTs
 
       const erc20BalancePromises = erc20contracts.map(async erc20contract => {
-        const balance = (await publicClient.readContract({
-          address: erc20contract as `0x${string}`,
-          abi: ERC20_ABI,
-          functionName: "balanceOf",
-          args: [hackedAddress],
-        })) as string;
-        if (!balance || balance.toString() == "0") {
+        try {
+          const balance = (await publicClient.readContract({
+            address: erc20contract as `0x${string}`,
+            abi: ERC20_ABI,
+            functionName: "balanceOf",
+            args: [hackedAddress],
+          })) as string;
+          if (!balance || balance.toString() == "0") {
+            return [];
+          }
+          return [erc20contract, balance.toString()];
+        } catch (e) {
+          console.error(`Error fetching assets of hacked account: ${e}`);
           return [];
         }
-        return [erc20contract, balance.toString()];
       });
 
       const erc721OwnershipPromises = Object.keys(erc721contractsAndTokenIds).map(async erc721Contract => {
         const ownedTokenIds = await Promise.all(
           Array.from(erc721contractsAndTokenIds[erc721Contract]).map(async tokenId => {
-            const ownerOfGivenTokenId = await publicClient.readContract({
-              address: erc721Contract as `0x${string}`,
-              abi: ERC721_ABI,
-              functionName: "ownerOf",
-              args: [BigNumber.from(tokenId)],
-            });
-            if (!ownerOfGivenTokenId || ownerOfGivenTokenId != hackedAddress) {
+            try {
+              const ownerOfGivenTokenId = await publicClient.readContract({
+                address: erc721Contract as `0x${string}`,
+                abi: ERC721_ABI,
+                functionName: "ownerOf",
+                args: [BigNumber.from(tokenId)],
+              });
+              if (!ownerOfGivenTokenId || ownerOfGivenTokenId != hackedAddress) {
+                return undefined;
+              }
+              return tokenId;
+            } catch (e) {
+              console.error(`Error fetching assets of hacked account: ${e}`);
               return undefined;
             }
-            return tokenId;
           }),
         );
         const ownedTokenIdsFiltered = ownedTokenIds.filter(tokenId => tokenId != undefined) as string[];
@@ -201,26 +211,31 @@ export const useAutodetectAssets = () => {
       });
 
       const erc1155OwnershipPromises = Object.keys(erc1155contractsAndTokenIds).map(async erc1155Contract => {
-        const tokenIdsWithinContract = Array.from(erc1155contractsAndTokenIds[erc1155Contract]);
-        const tokenIdBalances = (await publicClient.readContract({
-          address: erc1155Contract as `0x${string}`,
-          abi: ERC1155_ABI,
-          functionName: "balanceOfBatch",
-          args: [Array(tokenIdsWithinContract.length).fill(hackedAddress), tokenIdsWithinContract],
-        })) as bigint[];
+        try {
+          const tokenIdsWithinContract = Array.from(erc1155contractsAndTokenIds[erc1155Contract]);
+          const tokenIdBalances = (await publicClient.readContract({
+            address: erc1155Contract as `0x${string}`,
+            abi: ERC1155_ABI,
+            functionName: "balanceOfBatch",
+            args: [Array(tokenIdsWithinContract.length).fill(hackedAddress), tokenIdsWithinContract],
+          })) as bigint[];
 
-        const tokenIdsAndBalances: string[][] = [];
-        for (let i = 0; i < tokenIdBalances.length; i++) {
-          if (tokenIdBalances[i] == 0n) {
-            continue;
+          const tokenIdsAndBalances: string[][] = [];
+          for (let i = 0; i < tokenIdBalances.length; i++) {
+            if (tokenIdBalances[i] == 0n) {
+              continue;
+            }
+            tokenIdsAndBalances.push([tokenIdsWithinContract[i], tokenIdBalances[i].toString()]);
           }
-          tokenIdsAndBalances.push([tokenIdsWithinContract[i], tokenIdBalances[i].toString()]);
-        }
-        if (tokenIdsAndBalances.length == 0) {
+          if (tokenIdsAndBalances.length == 0) {
+            return [];
+          }
+
+          return [erc1155Contract, Object.fromEntries(tokenIdsAndBalances)];
+        } catch (e) {
+          console.error(`Error fetching assets of hacked account: ${e}`);
           return [];
         }
-
-        return [erc1155Contract, Object.fromEntries(tokenIdsAndBalances)];
       });
 
       // Await all the promises
