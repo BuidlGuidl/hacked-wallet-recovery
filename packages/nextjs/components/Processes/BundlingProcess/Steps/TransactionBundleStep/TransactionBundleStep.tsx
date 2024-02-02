@@ -81,7 +81,7 @@ export const TransactionBundleStep = ({
         </div>
         <div className="m-4" />
         <div className={`flex items-center justify-center ${styles.titleContainer}`}>
-          <Image src={BackSvg} alt={""} className="h-5 w-5 absolute" style={{left:30}} onClick={onBack} />
+          <Image src={BackSvg} alt={""} className="h-5 w-5 absolute" style={{ left: 30 }} onClick={onBack} />
           <h2 className={styles.title}>Your transactions</h2>
         </div>
         <div className={styles.assetList}>

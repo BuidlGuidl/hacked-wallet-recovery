@@ -198,7 +198,7 @@ export const RecoveryProcess = ({
           {
             text: "Continue",
             disabled: connectedAddress !== hackedAddress,
-            action: !!connectedAddress ? () => startSigning(connectedAddress): ()=>{},
+            action: !!connectedAddress ? () => startSigning(connectedAddress) : () => {},
           },
         ]}
         image={HackedWalletSvg}
