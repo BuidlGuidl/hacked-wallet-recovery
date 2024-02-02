@@ -92,7 +92,7 @@ export const ERC721_ABI = [
   },
 
   {
-    inputs: [{ internalType: "uint256", name: "id", type: "uint256" }],
+    inputs: [{ internalType: "uint256", name: "tokenId", type: "uint256" }],
     name: "ownerOf",
     outputs: [{ internalType: "address", name: "owner", type: "address" }],
     stateMutability: "view",
