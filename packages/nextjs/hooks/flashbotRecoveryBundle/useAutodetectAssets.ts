@@ -302,7 +302,7 @@ export const useAutodetectAssets = () => {
 
             const result: NftMetadataBatchToken[] = ownedTokenIds.map(tokenId => ({
               contractAddress: erc721contract as `0x${string}`,
-              tokenId: parseInt(tokenId).toString(),
+              tokenId: BigInt(tokenId).toString(),
               tokenType: NftTokenType.ERC721,
             }));
             erc721Minimal.push(...result);
@@ -312,7 +312,7 @@ export const useAutodetectAssets = () => {
                 type: "erc721",
                 info: `ERC721 - ${tokenSymbol != "???" ? `${tokenSymbol}` : `${erc721contract}`}`,
                 symbol: tokenSymbol,
-                tokenId: parseInt(tokenId).toString(),
+                tokenId: BigInt(tokenId).toString(),
                 toEstimate: {
                   from: hackedAddress as `0x${string}`,
                   to: erc721contract as `0x${string}`,
