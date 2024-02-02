@@ -34,7 +34,9 @@ export const ERC721Form = ({ hackedAddress, safeAddress, addAsset, close }: ITok
         functionName: "ownerOf",
         args: [BigNumber.from(tokenId)],
       });
-    } catch (e) {}
+    } catch (e) {
+      console.error(e);
+    }
 
     if (!ownerOfGivenTokenId || ownerOfGivenTokenId.toString() != hackedAddress) {
       showError(`Couldn't verify hacked account's ownership. Cannot add to the basket...`);
