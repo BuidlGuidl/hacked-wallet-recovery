@@ -1,11 +1,11 @@
 import { useShowError } from "./useShowError";
 import { FlashbotsBundleProvider } from "@flashbots/ethers-provider-bundle";
-import { BigNumber, ethers } from "ethers";
+import { BigNumber } from "ethers";
+import { parseEther } from "viem";
 import { usePublicClient } from "wagmi";
-import { CoreTxToEstimate, CoreTxToSign, RecoveryTx } from "~~/types/business";
+import { CoreTxToSign, RecoveryTx } from "~~/types/business";
 import { BLOCKS_IN_THE_FUTURE } from "~~/utils/constants";
 import { getTargetNetwork } from "~~/utils/scaffold-eth";
-
 
 export const useGasEstimation = () => {
   const targetNetwork = getTargetNetwork();
@@ -16,21 +16,24 @@ export const useGasEstimation = () => {
     deleteTransaction: (id: number) => void,
     modifyTransactions: (txs: RecoveryTx[]) => void,
   ) => {
-    const tempProvider = new ethers.providers.InfuraProvider(targetNetwork.id, "416f5398fa3d4bb389f18fd3fa5fb58c");
     try {
       const estimates = await Promise.all(
         txs
           .filter(a => a)
-          .map((tx, txId) => {
-            return tempProvider.estimateGas(tx.toEstimate as CoreTxToEstimate).catch(e => {
-              console.warn(
-                `Following tx will fail when bundle is submitted, so it's removed from the bundle right now. The contract might be a hacky one, and you can try further manipulation via crafting a custom call.`,
-              );
-              console.warn(tx);
-              console.warn(e);
-              deleteTransaction(txId);
-              return BigNumber.from("0");
-            });
+          .map(async (tx, txId) => {
+            const { to, from, data, value = "0" } = tx.toEstimate;
+            const estimate = await publicClient
+              .estimateGas({ account: from, to, data, value: parseEther(value) })
+              .catch(e => {
+                console.warn(
+                  `Following tx will fail when bundle is submitted, so it's removed from the bundle right now. The contract might be a hacky one, and you can try further manipulation via crafting a custom call.`,
+                );
+                console.warn(tx);
+                console.warn(e);
+                deleteTransaction(txId);
+                return BigNumber.from("0");
+              });
+            return BigNumber.from(estimate.toString());
           }),
       );
       const maxBaseFeeInFuture = await maxBaseFeeInFutureBlock();
