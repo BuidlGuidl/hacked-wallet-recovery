@@ -56,7 +56,7 @@ export const CustomPortal = ({ indicator, title, image, children, video, descrip
               <h3 className={`${styles.title}`}>{title}</h3>
               <div>
                 {!!image ? <Image className={`${styles.image}`} src={image} alt={""} /> : <></>}
-                {!!indicator ? <div className={styles.indicator}>{indicator > 0 ? indicator : 11} BLOCKS</div> : <></>}
+                {!!indicator ? <div className={styles.indicator}>Attempting in block #{indicator}</div> : <></>}
               </div>
 
               {!!video ? <Image className={`${styles.image}`} src={video} alt={""} /> : <></>}

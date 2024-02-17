@@ -47,7 +47,7 @@ interface IProps {
   hackedAddress: string;
   donationValue: string;
   setDonationValue: (amt: string) => void;
-  blockCountdown: number;
+  attemptedBlock: number;
   isDonationLoading: boolean;
   totalGasEstimate: BigNumber;
   rpcParams: IRPCParams | undefined;
@@ -60,7 +60,7 @@ export const RecoveryProcess = ({
   signTransactionsStep,
   finishProcess,
   showTipsModal,
-  blockCountdown,
+  attemptedBlock,
   donationValue,
   setDonationValue,
   connectedAddress,
@@ -215,7 +215,7 @@ export const RecoveryProcess = ({
       <CustomPortal
         title={"Sign each transaction"}
         description={
-          "Now you will be prompted to sign a transaction for each asset you selected for recovery. Approve each transaction as it appears."
+          "Now you will be prompted to sign a transaction for each asset you selected for recovery. Approve each transaction as it appears. Ignore pending transaction warnings."
         }
         image={MultiSignSvg}
       />
@@ -227,28 +227,30 @@ export const RecoveryProcess = ({
       <CustomPortal
         title={"Wait for confirmation"}
         description={
-          "Your asset recovery is in progress. Stay on this page and wait for your transactions to be included in a block."
+          "Your asset recovery is in progress. Stay on this page and wait while we attempt to include your transactions in a block."
         }
         image={ClockSvg}
-        indicator={blockCountdown}
+        indicator={attemptedBlock}
       />
     );
   }
 
   if (recoveryStatus == RecoveryProcessStatus.SUCCESS) {
-    let actions:any[] =[ {
-      text: "Finish",
-      disabled: false,
-      isSecondary: false,
-      action: () => finishProcess(),
-    }]
-    if(showDonationsButton){
-      actions.unshift( {
+    let actions: any[] = [
+      {
+        text: "Finish",
+        disabled: false,
+        isSecondary: false,
+        action: () => finishProcess(),
+      },
+    ];
+    if (showDonationsButton) {
+      actions.unshift({
         text: "Donate",
         isSecondary: true,
         disabled: false,
         action: () => showTipsModal(),
-      })
+      });
     }
     return (
       <CustomPortal
@@ -279,35 +281,41 @@ export const RecoveryProcess = ({
     );
   }
   if (recoveryStatus === RecoveryProcessStatus.DONATE) {
-    return(
+    return (
       <CustomPortal
-      title={"Support Our Mission"}
-      description={
-        "Your contribution will help us continue to offer this service free of charge. Thank you for your support!"
-      }
-      buttons={[
-        {
-          text: isDonationLoading ? "Sending..." : "Donate",
-          disabled: isDonationLoading || !hasEnoughEth || !address ,
-          action: () => finishProcess(),
-        },
-      ]}
-      image={TipsSvg}
-    >
-     
-      <>
-      <div className={styles.inputContainer}>
-        <label className={styles.label} htmlFor="tip">
-          Tip
-        </label>
-        <div className="mt-2" />
-        <InputBase name="tip" placeholder="0.0" value={donationValue} onChange={(val) => setDonationValue(val.replace(",", "."))} />
-        <span className={`${styles.eth} text-base-100`}>ETH</span>
-      </div>
-      <p className={`text-secondary-content`}>Please change the network first to <b>{networkName}</b></p>
-      </>
-    </CustomPortal>
-    )
+        title={"Support Our Mission"}
+        description={
+          "Your contribution will help us continue to offer this service free of charge. Thank you for your support!"
+        }
+        buttons={[
+          {
+            text: isDonationLoading ? "Sending..." : "Donate",
+            disabled: isDonationLoading || !hasEnoughEth || !address,
+            action: () => finishProcess(),
+          },
+        ]}
+        image={TipsSvg}
+      >
+        <>
+          <div className={styles.inputContainer}>
+            <label className={styles.label} htmlFor="tip">
+              Tip
+            </label>
+            <div className="mt-2" />
+            <InputBase
+              name="tip"
+              placeholder="0.0"
+              value={donationValue}
+              onChange={val => setDonationValue(val.replace(",", "."))}
+            />
+            <span className={`${styles.eth} text-base-100`}>ETH</span>
+          </div>
+          <p className={`text-secondary-content`}>
+            Please change the network first to <b>{networkName}</b>
+          </p>
+        </>
+      </CustomPortal>
+    );
   }
 
   return <></>;
