@@ -44,7 +44,7 @@ const Home: NextPage = () => {
     startRecoveryProcess,
     signTransactionsStep,
     signRecoveryTransactions,
-    blockCountdown,
+    attemptedBlock,
     showTipsModal,
     unsignedTxs,
     generateCorrectTransactions,
@@ -179,7 +179,7 @@ const Home: NextPage = () => {
           totalGasEstimate={totalGasEstimate}
           showTipsModal={showTipsModal}
           startProcess={add => startRecovery(add)}
-          blockCountdown={blockCountdown}
+          attemptedBlock={attemptedBlock}
           connectedAddress={connectedAddress}
           safeAddress={safeAddress}
           hackedAddress={hackedAddress}

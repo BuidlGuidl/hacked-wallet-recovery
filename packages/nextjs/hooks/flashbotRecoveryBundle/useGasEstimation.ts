@@ -1,15 +1,24 @@
+import { useState } from "react";
 import { useShowError } from "./useShowError";
 import { FlashbotsBundleProvider } from "@flashbots/ethers-provider-bundle";
+import { Alchemy, DebugTransaction, Network } from "alchemy-sdk";
 import { BigNumber } from "ethers";
 import { parseEther } from "viem";
 import { usePublicClient } from "wagmi";
 import { CoreTxToSign, RecoveryTx } from "~~/types/business";
-import { BLOCKS_IN_THE_FUTURE } from "~~/utils/constants";
 import { getTargetNetwork } from "~~/utils/scaffold-eth";
+
+const alchemyApiKey = process.env.NEXT_PUBLIC_ALCHEMY_API_KEY;
 
 export const useGasEstimation = () => {
   const targetNetwork = getTargetNetwork();
   const publicClient = usePublicClient({ chainId: targetNetwork.id });
+  const [alchemy] = useState<Alchemy>(
+    new Alchemy({
+      apiKey: alchemyApiKey,
+      network: targetNetwork.network == "goerli" ? Network.ETH_GOERLI : Network.ETH_MAINNET,
+    }),
+  );
   const { showError } = useShowError();
   const estimateTotalGasPrice = async (
     txs: RecoveryTx[],
@@ -17,34 +26,55 @@ export const useGasEstimation = () => {
     modifyTransactions: (txs: RecoveryTx[]) => void,
   ) => {
     try {
-      const estimates = await Promise.all(
-        txs
-          .filter(a => a)
-          .map(async (tx, txId) => {
-            const { to, from, data, value = "0" } = tx.toEstimate;
-            const estimate = await publicClient
-              .estimateGas({ account: from, to, data, value: parseEther(value) })
-              .catch(e => {
-                console.warn(
-                  `Following tx will fail when bundle is submitted, so it's removed from the bundle right now. The contract might be a hacky one, and you can try further manipulation via crafting a custom call.`,
-                );
-                console.warn(tx);
-                console.warn(e);
-                deleteTransaction(txId);
-                return BigNumber.from("0");
-              });
-            return BigNumber.from(estimate.toString());
-          }),
-      );
+      let estimates: BigNumber[] = [];
+      if (txs.length <= 3 && targetNetwork.network == "mainnet") {
+        // Try to estimate the gas for the entire bundle
+        const bundle = [...txs.map(tx => tx.toEstimate)];
+        // TODO: Add catching so that if the bundle hasn't changed we don't need to call Alchemy again
+        const simulation = await alchemy.transact.simulateExecutionBundle(bundle as DebugTransaction[]);
+        estimates = simulation.map((result, index) => {
+          if (result.calls[0].error) {
+            console.warn(
+              `Following tx will fail when bundle is submitted, so it's removed from the bundle right now. The contract might be a hacky one, and you can try further manipulation via crafting a custom call.`,
+            );
+            console.warn(index, result);
+            deleteTransaction(index);
+            return BigNumber.from("0");
+          }
+          return BigNumber.from(result.calls[0].gasUsed);
+        });
+      } else {
+        // Estimate each transaction individually
+        estimates = await Promise.all(
+          txs
+            .filter(a => a)
+            .map(async (tx, txId) => {
+              const { to, from, data, value = "0" } = tx.toEstimate;
+              const estimate = await publicClient
+                .estimateGas({ account: from, to, data, value: parseEther(value) })
+                .catch(e => {
+                  console.warn(
+                    `Following tx will fail when bundle is submitted, so it's removed from the bundle right now. The contract might be a hacky one, and you can try further manipulation via crafting a custom call.`,
+                  );
+                  console.warn(tx);
+                  console.warn(e);
+                  deleteTransaction(txId);
+                  return BigNumber.from("0");
+                });
+              return BigNumber.from(estimate.toString());
+            }),
+        );
+      }
       const maxBaseFeeInFuture = await maxBaseFeeInFutureBlock();
-      const priorityFee = BigNumber.from(10).pow(10);
+      // Priority fee is 3 gwei
+      const priorityFee = BigNumber.from(3).mul(1e9);
       const txsWithGas: RecoveryTx[] = estimates.map((gas, index) => {
         const mainTx = txs[index] as RecoveryTx;
         // If the tx doesn't exist, skip adding gas properties
         if (!mainTx) return mainTx;
         const tx = Object.assign({}, mainTx.toEstimate) as CoreTxToSign;
-        // Buffer the gas limit by 5%
-        tx.gas = gas.mul(105).div(100).toString();
+        // Buffer the gas limit by 15%
+        tx.gas = gas.mul(115).div(100).toString();
         // Set  type
         tx.type = "eip1559";
         // Set suggested gas properties
@@ -59,7 +89,7 @@ export const useGasEstimation = () => {
       }
       const totalGasCost = estimates
         .reduce((acc: BigNumber, val: BigNumber) => acc.add(val), BigNumber.from("0"))
-        .mul(105)
+        .mul(115)
         .div(100);
       const gasPrice = maxBaseFeeInFuture.add(priorityFee);
       return totalGasCost.mul(gasPrice);
@@ -75,10 +105,8 @@ export const useGasEstimation = () => {
   const maxBaseFeeInFutureBlock = async () => {
     const blockNumberNow = await publicClient.getBlockNumber();
     const block = await publicClient.getBlock({ blockNumber: blockNumberNow });
-    return FlashbotsBundleProvider.getMaxBaseFeeInFutureBlock(
-      BigNumber.from(block.baseFeePerGas),
-      BLOCKS_IN_THE_FUTURE[targetNetwork.id],
-    );
+    // Get the max base fee in 3 blocks to reduce the amount of eth spent on the transaction (possible to get priced out if blocks are full but unlikely)
+    return FlashbotsBundleProvider.getMaxBaseFeeInFutureBlock(BigNumber.from(block.baseFeePerGas), 3);
   };
 
   return {
