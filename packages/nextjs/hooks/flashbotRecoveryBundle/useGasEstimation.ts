@@ -27,7 +27,7 @@ export const useGasEstimation = () => {
   ) => {
     try {
       let estimates: BigNumber[] = [];
-      if (txs.length <= 3) {
+      if (txs.length <= 3 && targetNetwork.network == "mainnet") {
         // Try to estimate the gas for the entire bundle
         const bundle = [...txs.map(tx => tx.toEstimate)];
         // TODO: Add catching so that if the bundle hasn't changed we don't need to call Alchemy again
