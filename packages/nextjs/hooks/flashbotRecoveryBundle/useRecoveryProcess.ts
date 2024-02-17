@@ -38,7 +38,7 @@ export const useRecoveryProcess = () => {
   const [gasCovered, setGasCovered] = useState<boolean>(false);
   const [sentTxHash, setSentTxHash] = useLocalStorage<string>("sentTxHash", "");
   const [sentBlock, setSentBlock] = useLocalStorage<number>("sentBlock", 0);
-  const [blockCountdown, setBlockCountdown] = useLocalStorage<number>("blockCountdown", 0);
+  const [attemptedBlock, setAttemptedBlock] = useLocalStorage<number>("attemptedBlock", 0);
   const { showError } = useShowError();
 
   const [stepActive, setStepActive] = useState<RecoveryProcessStatus>(RecoveryProcessStatus.INITIAL);
@@ -63,36 +63,6 @@ export const useRecoveryProcess = () => {
       );
     })();
   }, [targetNetwork.id]);
-
-  useInterval(async () => {
-    const isNotAbleToListenBundle = stepActive != RecoveryProcessStatus.LISTEN_BUNDLE || !sentTxHash || sentBlock == 0;
-    try {
-      if (isNotAbleToListenBundle) return;
-      const finalTargetBlock = sentBlock + BLOCKS_IN_THE_FUTURE[targetNetwork.id];
-      const currentBlock = parseInt((await publicClient.getBlockNumber()).toString());
-      const blockDelta = finalTargetBlock - currentBlock;
-      setBlockCountdown(blockDelta);
-
-      if (blockDelta < 0) {
-        showError(
-          `The recovery has failed. To solve this issue, remove all "Hacked Wallet Recovery RPC" and clear activity data. Check this <a href="https://youtu.be/G4dg74m_Bmc" target="_blank" rel="noopener noreferrer">video</a>`,
-          true,
-        );
-        setSentBlock(0);
-        setSentTxHash("");
-        resetStatus();
-        return;
-      }
-      const txReceipt = await publicClient.getTransactionReceipt({
-        hash: sentTxHash as `0x${string}`,
-      });
-      if (txReceipt && txReceipt.blockNumber) {
-        setStepActive(RecoveryProcessStatus.SUCCESS);
-      }
-      //   return;
-      console.log("TXs not yet mined");
-    } catch (e) {}
-  }, 5000);
 
   const resetStatus = () => {
     setStepActive(RecoveryProcessStatus.INITIAL);
@@ -130,10 +100,12 @@ export const useRecoveryProcess = () => {
     if (block) {
       const maxBaseFeeInFutureBlock = FlashbotsBundleProvider.getMaxBaseFeeInFutureBlock(
         block.baseFeePerGas as BigNumber,
-        10,
+        3,
       ).toString();
-      const priorityFee = BigNumber.from(10).pow(10).toString(); // 10 Gwei
-      return { maxBaseFeeInFutureBlock, priorityFee };
+      const priorityFee = BigNumber.from(3).mul(1e9).toString(); // 3 Gwei
+      // Buffer the max base fee by 15%
+      const adjustedMaxBaseFeeInFutureBlock = BigNumber.from(maxBaseFeeInFutureBlock).mul(120).div(100).toString();
+      return { maxBaseFeeInFutureBlock: adjustedMaxBaseFeeInFutureBlock, priorityFee };
     }
     return { maxBaseFeeInFutureBlock: "0", priorityFee: "0" };
   };
@@ -155,7 +127,7 @@ export const useRecoveryProcess = () => {
     hackedAddress: string,
     transactions: RecoveryTx[],
     currentBundleId: string,
-    surpass: boolean = false,
+    surpass = false,
   ) => {
     if (!surpass && !gasCovered) {
       showError("How did you come here without covering the gas fee first??");
@@ -206,8 +178,12 @@ export const useRecoveryProcess = () => {
       const finalBundle = await (
         await fetch(
           `https://rpc${targetNetwork.network == "goerli" ? "-goerli" : ""}.flashbots.net/bundle?id=${currentBundleId}`,
+          {
+            cache: "no-store",
+          },
         )
       ).json();
+
       if (!finalBundle || !finalBundle.rawTxs) {
         showError("Couldn't fetch latest bundle");
         resetStatus();
@@ -217,22 +193,48 @@ export const useRecoveryProcess = () => {
       const txs = finalBundle.rawTxs.reverse();
 
       try {
+        setStepActive(RecoveryProcessStatus.LISTEN_BUNDLE);
         setSentTxHash(ethers.utils.keccak256(txs[0]));
         setSentBlock(parseInt((await publicClient.getBlockNumber()).toString()));
 
         const currentUrl = window.location.href.replace("?", "");
-        const response = await fetch(currentUrl + `api/relay${targetNetwork.network == "goerli" ? "-goerli" : ""}`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            txs,
-          }),
-        });
+        while (true) {
+          const currentBlock = parseInt((await publicClient.getBlockNumber()).toString());
+          setAttemptedBlock(currentBlock + 2);
+          const response = await fetch(currentUrl + `api/relay${targetNetwork.network == "goerli" ? "-goerli" : ""}`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              txs,
+            }),
+            cache: "no-store",
+          });
 
-        await response.json();
-        setStepActive(RecoveryProcessStatus.LISTEN_BUNDLE);
+          const parsedResponse = await response.json();
+          console.log("DEBUG", parsedResponse);
+          if (parsedResponse.error) {
+            throw new Error(parsedResponse.error);
+          }
+          // Success
+          if (parsedResponse.success) {
+            setStepActive(RecoveryProcessStatus.SUCCESS);
+            break;
+          }
+          // Error
+          if (parsedResponse.SimulationResponse && (parsedResponse.SimulationResponse as any).error) {
+            showError(
+              `The recovery has failed. To solve this issue, remove all "Hacked Wallet Recovery RPC" and clear activity data. Check this <a href="https://youtu.be/G4dg74m_Bmc" target="_blank" rel="noopener noreferrer">video</a>`,
+              true,
+            );
+            setSentTxHash("");
+            setSentBlock(0);
+            resetStatus();
+            break;
+          }
+          // BlockPassedWithoutInclusion - try again
+        }
       } catch (e) {
         console.error(e);
         setSentTxHash("");
@@ -405,7 +407,7 @@ export const useRecoveryProcess = () => {
     data: stepActive,
     sentBlock,
     sentTxHash,
-    blockCountdown,
+    attemptedBlock,
     changeFlashbotNetwork,
     startRecoveryProcess,
     signTransactionsStep,

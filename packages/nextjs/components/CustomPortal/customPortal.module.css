@@ -52,6 +52,7 @@
 .image {
   height: 190px;
   width: 190px;
+  margin: auto;
 }
 .indicator {
   text-align: center;
