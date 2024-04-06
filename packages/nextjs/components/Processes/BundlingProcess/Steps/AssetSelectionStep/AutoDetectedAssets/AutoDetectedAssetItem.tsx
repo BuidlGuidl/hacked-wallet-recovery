@@ -31,7 +31,7 @@ export const AutoDetectedAssetItem = ({ onClick, isSelected, tx, isLoading, imag
       //@ts-ignore
       return tx.amount;
     }
-    if (tx.type === "custom") {
+    if (tx.type === "custom" || tx.type === "custom-abininja") {
       //@ts-ignore
       return tx.info.split(" to ")[1];
     }
@@ -46,7 +46,7 @@ export const AutoDetectedAssetItem = ({ onClick, isSelected, tx, isLoading, imag
       //@ts-ignore
       return tx.symbol;
     }
-    if (tx.type === "custom") {
+    if (tx.type === "custom" || tx.type === "custom-abininja") {
       //@ts-ignore
       return tx.info.split(" to ")[0];
     }

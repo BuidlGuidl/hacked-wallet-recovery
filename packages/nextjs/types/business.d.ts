@@ -1,4 +1,4 @@
-export type RecoverableAssetTypes = "erc20" | "erc721" | "erc1155" | "custom";
+export type RecoverableAssetTypes = "erc20" | "erc721" | "erc1155" | "custom" | "custom-abininja";
 
 export interface CoreTxToEstimate {
   from: `0x${string}`;

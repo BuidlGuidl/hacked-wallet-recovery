@@ -47,8 +47,8 @@ export const AbiNinjaFlow = ({ addUnsignedTx }: { addUnsignedTx: (asset: IWrappe
             const value = latestTransaction.value;
 
             const customTx: CustomTx = {
-              type: "custom",
-              info: `Custom call to ${contractAddress} with data ${data}`,
+              type: "custom-abininja",
+              info: `Custom abininja call to ${contractAddress} with data ${data}`,
               toEstimate: {
                 from: hackedWalletAddress as `0x${string}`,
                 to: contractAddress,
