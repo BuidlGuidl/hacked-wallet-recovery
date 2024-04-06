@@ -1,13 +1,15 @@
 import Image from "next/image";
 import CloseSvg from "../../../../../../public/assets/flashbotRecovery/close.svg";
+import { AbiNinjaFlow } from "./AbiNinjaFlow/AbiNinjaFlow";
 import { BasicFlow } from "./BasicFlow/BasicFlow";
 import { CustomFlow } from "./CustomFlow/CustomFlow";
+import { RawFlow } from "./RawFlow/RawFlow";
 import styles from "./manualAssetSelection.module.css";
+import { ImpersonatorIframeProvider } from "@impersonator/iframe";
 import { motion } from "framer-motion";
 import { createPortal } from "react-dom";
 import { Tabs } from "~~/components/tabs/Tabs";
 import { IWrappedRecoveryTx } from "~~/hooks/flashbotRecoveryBundle/useAutodetectAssets";
-import { RawFlow } from "./RawFlow/RawFlow";
 
 interface IProps {
   isVisible: boolean;
@@ -36,15 +38,24 @@ export const ManualAssetSelection = ({ isVisible, close, safeAddress, addAsset, 
         </span>
         <div className={`${styles.modalContent}`}>
           <h3 className={`${styles.title}`}>{"Add assets manually"}</h3>
-          <Tabs tabTitles={["Basic", "Custom", "Raw"]}>
+          <Tabs tabTitles={["Basic", "Custom", "Raw", "AbiNinja"]}>
             {active => {
               const isBasic = active == 0;
               if (isBasic) {
                 return <BasicFlow safeAddress={safeAddress} hackedAddress={hackedAddress} addAsset={addAsset} />;
               } else if (active == 1) {
                 return <CustomFlow hackedAddress={hackedAddress} addAsset={item => addAsset(item)} />;
+              } else if (active == 2) {
+                return <RawFlow hackedAddress={hackedAddress} addAsset={item => addAsset(item)} />;
               }
-              return <RawFlow hackedAddress={hackedAddress} addAsset={item => addAsset(item)} />;
+
+              return (
+                // Adding the provider here instead of _app.tsx so that it resets the states on each render
+                // because @impersonator/iframe uses react context and does not give api to reset the state
+                <ImpersonatorIframeProvider>
+                  <AbiNinjaFlow addUnsignedTx={item => addAsset(item)} />
+                </ImpersonatorIframeProvider>
+              );
             }}
           </Tabs>
         </div>
