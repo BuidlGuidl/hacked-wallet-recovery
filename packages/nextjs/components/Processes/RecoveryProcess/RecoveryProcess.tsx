@@ -129,11 +129,11 @@ export const RecoveryProcess = ({
         <CustomPortal
           title={"Switch Network"}
           description={
-            "Manually add the following network to your wallet. This is a crucial step to ensure the hacker doesn't see your funds until your recovery is complete."
+            "Confirm the network has been changed or manually add the following network to your wallet. This is a crucial step to ensure the hacker doesn't see your funds until your recovery is complete."
           }
           buttons={[
             {
-              text: "I have added the new network",
+              text: "the network has been added",
               disabled: false,
               action: signTransactionsStep,
             },
