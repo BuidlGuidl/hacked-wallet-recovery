@@ -170,21 +170,9 @@ export const RecoveryProcess = ({
   if (recoveryStatus == RecoveryProcessStatus.PAY_GAS) {
     return (
       <CustomPortal
-        title={"Send Gas"}
+        title={"The Funding Transaction"}
         description={"Now we will send a transaction to fund the hacked wallet so it can recover the assets."}
         image={SwitchNetworkSvg}
-      />
-    );
-  }
-
-  if (recoveryStatus == RecoveryProcessStatus.INCREASE_PRIORITY_FEE) {
-    return (
-      <CustomPortal
-        title={"The Funding Transaction"}
-        description={
-          "To ensure inclusion of your transaction in the next block, increase the gas fee. Approve the gas increase in your wallet."
-        }
-        image={SignSvg}
       />
     );
   }

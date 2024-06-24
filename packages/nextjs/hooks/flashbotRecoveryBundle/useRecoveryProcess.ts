@@ -359,7 +359,6 @@ export const useRecoveryProcess = () => {
   }: Pick<IStartProcessProps, "totalGas" | "currentBundleId" | "hackedAddress" | "transactions">) => {
     setStepActive(RecoveryProcessStatus.PAY_GAS);
     try {
-      setStepActive(RecoveryProcessStatus.INCREASE_PRIORITY_FEE);
       // ////////// Cover the envisioned total gas fee from safe account
       await payTheGas(totalGas, hackedAddress);
       signRecoveryTransactions(hackedAddress, transactions, currentBundleId, true);
