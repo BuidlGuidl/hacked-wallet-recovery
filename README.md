@@ -56,7 +56,7 @@ Features:
 __YOU DID IT! RECOVERY COMPLETE!__
 
 ## Manually adding assets
-You can manually add assets in three ways:
+You can manually add assets in four ways:
 ### 1. Add a ERC20, ERC721 or ERC1155 by it's details
 
   Select the "Basic" tab and click "Add" under the asset type you wish to add. Follow the prompts to add the contract address, token id(s) etc.
@@ -68,6 +68,12 @@ You can manually add assets in three ways:
 ### 3. Paste in a raw transaction
 
   This may be the easiest for airdrop claims. Go to the claim site and go through the normal process for claiming. When the site sends the transaction to your wallet for signing - *don't sign* (you probably can't anyway for lack of funds). Instead of signing, copy the raw transaction and paste it in this box. Read this note on [airdrop claims!](#airdrop-claims)
+
+### 4. AbiNinja
+
+  The [AbiNinja](https://abi.ninja) method is great for helping you see what methods are available to call on the contract address you paste in. Paste in an address and then click "Load Contract". Next you should click the hamburger menu to see the read and write methods. Select the write method you want to use and then close the menu. You should see the method with inputs for each parameter required. Once you have entered the parameters you can click "Send" and it should return you to the asset selection view in Hacked Wallet Recovery with your new transaction selected. If you encounter errors while in AbiNinja it may be giving you helpful feedback on a mistake you made when adding a parameter.
+
+  AbiNinja has a limitation in that you cannot create a transaction that reverts. For instance, you can use it for creating a transaction to claim an airdrop but if you try to create a transaction for moving the airdropped tokens it will fail because your hacked account does not actually have the tokens yet, you have only created a transaction that *will* move the tokens when you execute all the transactions as a bundle. You can still use the other methods for creating a transaction to move the tokens.
 
 ### Airdrop claims
 If you use option 2 or 3 for claiming an airdrop, make sure you also create a transaction that moves the token to a safe wallet. It would be sad to go through all this trouble just to watch your tokens get swept because you merely claimed them *to* your hacked wallet and forgot to move them out of your hacked wallet. You should be able to use the "Basic" tab (option 1) with the token contract address to move them out of your wallet. If that fails then you can use the "Custom" tab. *Just don't forget to do it!*
