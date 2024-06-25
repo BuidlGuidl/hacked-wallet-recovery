@@ -14,7 +14,15 @@ export const Footer = () => {
       <div className="w-full">
         <ul className="menu menu-horizontal w-full">
           <div className="flex justify-center items-center gap-2 text-sm w-full">
-            Built with <HeartIcon className="inline-block h-4 w-4" /> at 🏰{" "}
+            <a
+              className="underline underline-offset-2"
+              href="https://github.com/BuidlGuidl/flashbot-recovery-bundler"
+              target="_blank"
+              rel="noreferrer"
+            >
+              Fork me
+            </a>
+            {" · "}Built with <HeartIcon className="inline-block h-4 w-4" /> at 🏰{" "}
             <a href="https://buidlguidl.com/" target="_blank" rel="noreferrer" className="underline underline-offset-2">
               BuidlGuidl
             </a>
