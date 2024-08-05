@@ -1,4 +1,4 @@
-import { HeartIcon } from "@heroicons/react/24/outline";
+import { ChatBubbleOvalLeftEllipsisIcon, HeartIcon } from "@heroicons/react/24/outline";
 import { SwitchTheme } from "~~/components/SwitchTheme";
 
 /**
@@ -29,6 +29,15 @@ export const Footer = () => {
           </div>
         </ul>
       </div>
+
+      <a
+        href="https://t.me/+1rbnZWGTpJExOGJh"
+        target="_blank"
+        rel="noreferrer"
+        className="fixed bottom-4 right-4 p-2 bg-secondary-500 rounded-full text-white"
+      >
+        <ChatBubbleOvalLeftEllipsisIcon className="h-8 w-8" />
+      </a>
     </div>
   );
 };
