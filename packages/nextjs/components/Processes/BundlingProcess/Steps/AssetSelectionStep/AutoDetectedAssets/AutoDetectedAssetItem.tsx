@@ -100,9 +100,10 @@ export const AutoDetectedAssetItem = ({ onClick, isSelected, tx, isLoading, imag
         />
         {tx?.type === "erc20" ? <span className={styles.coinTitle}>ERC20</span> : ""}
       </div>
-      <div className={`${styles.data}`}>
-        {getTitle()}
-        {getSubtitleTitle()}
+
+      <div className={`${styles.data} truncate w-fit`}>
+        <h3>{getTitle()}</h3>
+        <span className="overflow-hidden text-ellipsis flex-nowrap">{getSubtitleTitle()}</span>
       </div>
     </motion.div>
   );
