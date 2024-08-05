@@ -3,6 +3,7 @@ import dynamic from "next/dynamic";
 import { BigNumber } from "ethers";
 import { NextPage } from "next";
 import { useLocalStorage } from "usehooks-ts";
+import { parseEther } from "viem";
 import { useAccount, usePrepareSendTransaction, useSendTransaction } from "wagmi";
 import { CustomPortal } from "~~/components/CustomPortal/CustomPortal";
 import { MetaHeader } from "~~/components/MetaHeader";
@@ -11,11 +12,10 @@ import { HackedAddressProcess } from "~~/components/Processes/HackedAddressProce
 import { RecoveryProcess } from "~~/components/Processes/RecoveryProcess/RecoveryProcess";
 import { useRecoveryProcess } from "~~/hooks/flashbotRecoveryBundle/useRecoveryProcess";
 import { useShowError } from "~~/hooks/flashbotRecoveryBundle/useShowError";
-import GasSvg from "~~/public/assets/flashbotRecovery/gas-illustration.svg";
 import ErrorSvg from "~~/public/assets/flashbotRecovery/error.svg";
+import GasSvg from "~~/public/assets/flashbotRecovery/gas-illustration.svg";
 import { BundlingSteps, RecoveryProcessStatus } from "~~/types/enums";
 import { CONTRACT_ADDRESS, DUMMY_ADDRESS } from "~~/utils/constants";
-import { parseEther } from "viem";
 
 interface IRPCParams {
   chainId: string;
@@ -51,16 +51,19 @@ const Home: NextPage = () => {
     setUnsignedTxs,
     validateBundleIsReady,
   } = useRecoveryProcess();
- 
 
   const { config } = usePrepareSendTransaction({
     to: CONTRACT_ADDRESS,
     value: undefined,
-  })
-  const { data, isLoading:isDonationLoading, isSuccess:isDonationSuccess, sendTransaction } =
-    useSendTransaction(config)
+  });
+  const {
+    data,
+    isLoading: isDonationLoading,
+    isSuccess: isDonationSuccess,
+    sendTransaction,
+  } = useSendTransaction(config);
 
-  const startSigning = (address:string) => {
+  const startSigning = (address: string) => {
     console.log("DEBUG: startSigning", unsignedTxs);
     const transformedTransactions = generateCorrectTransactions({
       transactions: unsignedTxs,
@@ -74,11 +77,14 @@ const Home: NextPage = () => {
   const startRecovery = (safe: string) => {
     console.log("DEBUG: startRecovery", unsignedTxs);
     setSafeAddress(safe);
-    const transformedTransactions = generateCorrectTransactions({ transactions: unsignedTxs, safeAddress: safe, hackedAddress });
+    const transformedTransactions = generateCorrectTransactions({
+      transactions: unsignedTxs,
+      safeAddress: safe,
+      hackedAddress,
+    });
     setUnsignedTxs(transformedTransactions);
     startRecoveryProcess({
       safeAddress: safe,
-      totalGas: totalGasEstimate,
       hackedAddress,
       currentBundleId,
       transactions: transformedTransactions,
@@ -89,7 +95,6 @@ const Home: NextPage = () => {
 
   const signTransactions = async () => {
     await signTransactionsStep({
-      totalGas: totalGasEstimate,
       hackedAddress,
       currentBundleId,
       transactions: unsignedTxs,
@@ -122,23 +127,20 @@ const Home: NextPage = () => {
   };
 
   const finishProcess = () => {
-    if(!donationValue){
-      cleanApp()
+    if (!donationValue) {
+      cleanApp();
       return;
     }
-    if(parseEther(donationValue)>0){
-      sendTransaction?.({...config, value:parseEther(donationValue)})
+    if (parseEther(donationValue) > 0) {
+      sendTransaction?.({ ...config, value: parseEther(donationValue) });
     }
- 
   };
 
   useEffect(() => {
-
-    if(isDonationSuccess){
-      cleanApp()
+    if (isDonationSuccess) {
+      cleanApp();
     }
-
-  },[isDonationSuccess])
+  }, [isDonationSuccess]);
 
   return (
     <>
@@ -172,10 +174,10 @@ const Home: NextPage = () => {
           recoveryStatus={processStatus}
           donationValue={donationValue}
           signTransactionsStep={signTransactions}
-          setDonationValue={(atm) => setDonationValue(atm)}
+          setDonationValue={atm => setDonationValue(atm)}
           isDonationLoading={isDonationLoading}
           finishProcess={() => finishProcess()}
-          startSigning={(address) =>startSigning(address)}
+          startSigning={address => startSigning(address)}
           totalGasEstimate={totalGasEstimate}
           showTipsModal={showTipsModal}
           startProcess={add => startRecovery(add)}
@@ -187,20 +189,17 @@ const Home: NextPage = () => {
         />
 
         {isFinalProcessError && error != "" ? (
-          <CustomPortal
-            close={() => resetError()}
-            title={"Something went wrong"}
-            description={error}
-            image={GasSvg}
-          />
+          <CustomPortal close={() => resetError()} title={"Something went wrong"} description={error} image={GasSvg} />
         ) : error != "" ? (
           <CustomPortal
             close={() => resetError()}
             title={"Something went wrong"}
             description={error}
-            image={isFinalProcessError ? GasSvg:ErrorSvg}
+            image={isFinalProcessError ? GasSvg : ErrorSvg}
           />
-        ):<></>}
+        ) : (
+          <></>
+        )}
       </div>
     </>
   );

@@ -98,19 +98,9 @@ export const AssetSelectionStep = ({
       />
 
       <div className={`flex items-center justify-space-between ${styles.titleContainer}`}>
-        <Image
-          src={BackSvg}
-          alt={""}
-          className="h-5 w-5"
-          onClick={onBackButton}
-        />
+        <Image src={BackSvg} alt={""} className="h-5 w-5" onClick={onBackButton} />
         <h2 className={`${styles.title}`}>Select your assets</h2>
-        <Image
-          src={RefreshSvg}
-          alt={""}
-          className="h-5 w-5"
-          onClick={reloadAssets}
-        />
+        <Image src={RefreshSvg} alt={""} className="h-5 w-5" onClick={reloadAssets} />
       </div>
 
       <AutoDetectedAssets
@@ -122,7 +112,12 @@ export const AssetSelectionStep = ({
 
       <CustomButton type="btn-accent" text={"Add Manually"} onClick={() => setIsAddingManually(true)} />
       <div className="m-2" />
-      <CustomButton disabled={selectedAssetIndices.length === 0} type="btn-primary" text={"Continue"} onClick={onAddAssetsClick} />
+      <CustomButton
+        disabled={selectedAssetIndices.length === 0}
+        type="btn-primary"
+        text={"Continue"}
+        onClick={onAddAssetsClick}
+      />
     </motion.div>
   );
 };
