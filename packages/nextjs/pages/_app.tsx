@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import type { AppProps } from "next/app";
+import { ImpersonatorIframeProvider } from "@impersonator/iframe";
 import { RainbowKitProvider, darkTheme, lightTheme } from "@rainbow-me/rainbowkit";
 import "@rainbow-me/rainbowkit/styles.css";
 import NextNProgress from "nextjs-progressbar";
@@ -41,7 +42,7 @@ const ScaffoldEthApp = ({ Component, pageProps }: AppProps) => {
         theme={isDarkTheme ? darkTheme() : lightTheme()}
       >
         <ErrorProvider>
-          <div className="flex flex-col min-h-screen" style={{overflowY:"auto", overflowX:"hidden"}}>
+          <div className="flex flex-col min-h-screen" style={{ overflowY: "auto", overflowX: "hidden" }}>
             {/* <Header /> */}
             <main className="relative flex flex-col flex-1">
               <Component {...pageProps} />
