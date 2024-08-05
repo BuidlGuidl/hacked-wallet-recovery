@@ -3,13 +3,12 @@ import { useShowError } from "./useShowError";
 import { InfuraProvider } from "@ethersproject/providers";
 import { FlashbotsBundleProvider } from "@flashbots/ethers-provider-bundle";
 import { BigNumber, ethers } from "ethers";
-import { useInterval, useLocalStorage } from "usehooks-ts";
+import { useLocalStorage } from "usehooks-ts";
 import { v4 } from "uuid";
 import { useAccount, usePublicClient, useWalletClient } from "wagmi";
 import { ERC20Tx, ERC721Tx, ERC1155Tx, RecoveryTx } from "~~/types/business";
 import { RecoveryProcessStatus } from "~~/types/enums";
 import { DUMMY_ADDRESS, ERC20_ABI, ERC721_ABI, ERC1155_ABI } from "~~/utils/constants";
-import { BLOCKS_IN_THE_FUTURE } from "~~/utils/constants";
 import { getTargetNetwork } from "~~/utils/scaffold-eth";
 
 const erc721Interface = new ethers.utils.Interface(ERC721_ABI);
@@ -18,7 +17,6 @@ const erc20Interface = new ethers.utils.Interface(ERC20_ABI);
 
 interface IStartProcessProps {
   safeAddress: string;
-  totalGas: BigNumber;
   hackedAddress: string;
   transactions: RecoveryTx[];
   currentBundleId: string;
@@ -77,7 +75,7 @@ export const useRecoveryProcess = () => {
     if (!address) {
       setStepActive(RecoveryProcessStatus.NO_CONNECTED_ACCOUNT);
       return false;
-    } else if (address != safeAddress || safeAddress == DUMMY_ADDRESS) {
+    } else if (address != safeAddress || safeAddress == DUMMY_ADDRESS || address == DUMMY_ADDRESS) {
       setStepActive(RecoveryProcessStatus.NO_SAFE_ACCOUNT);
       return false;
     }
@@ -110,11 +108,23 @@ export const useRecoveryProcess = () => {
     return { maxBaseFeeInFutureBlock: "0", priorityFee: "0" };
   };
 
-  const payTheGas = async (totalGas: BigNumber, hackedAddress: string) => {
+  const payTheGas = async (transactions: RecoveryTx[], hackedAddress: string) => {
+    // Add up all the fees and multiply by the gas cost to get the total fee
+    let totalFeePerGas = BigInt(0);
+    let totalGas = BigInt(0);
+    for (const tx of transactions) {
+      if (tx.toSign) {
+        totalFeePerGas += BigInt(tx.toSign?.maxFeePerGas || 0);
+        totalGas += BigInt(tx.toSign?.gas || 0);
+      }
+    }
+    // Add one percent for good measure
+    const totalFee = (totalFeePerGas * totalGas * BigInt(101)) / BigInt(100);
+    console.log("DEBUG: totalFee", totalFee);
     const { maxBaseFeeInFutureBlock, priorityFee } = await getEstimatedTxFees();
     await walletClient?.sendTransaction({
       to: hackedAddress as `0x${string}`,
-      value: BigInt(totalGas.toString()),
+      value: totalFee,
       type: "eip1559",
       maxFeePerGas: BigInt(priorityFee) + BigInt(maxBaseFeeInFutureBlock),
       maxPriorityFeePerGas: BigInt(priorityFee),
@@ -214,18 +224,15 @@ export const useRecoveryProcess = () => {
 
           const parsedResponse = await response.json();
           console.log("DEBUG", parsedResponse);
-          if (parsedResponse.error) {
-            throw new Error(parsedResponse.error);
-          }
           // Success
           if (parsedResponse.success) {
             setStepActive(RecoveryProcessStatus.SUCCESS);
             break;
           }
           // Error
-          if (parsedResponse.SimulationResponse && (parsedResponse.SimulationResponse as any).error) {
+          if (!parsedResponse.success && parsedResponse.response.includes("Bundle reverted with error")) {
             showError(
-              `The recovery has failed. To solve this issue, remove all "Hacked Wallet Recovery RPC" and clear activity data. Check this <a href="https://youtu.be/G4dg74m_Bmc" target="_blank" rel="noopener noreferrer">video</a>`,
+              `${parsedResponse.message}.\n The recovery has failed. To solve this issue, remove all "Hacked Wallet Recovery RPC" and clear activity data. Check this <a href="https://youtu.be/G4dg74m_Bmc" target="_blank" rel="noopener noreferrer">video</a>`,
               true,
             );
             setSentTxHash("");
@@ -260,10 +267,12 @@ export const useRecoveryProcess = () => {
     safeAddress: string;
     hackedAddress: string;
   }): RecoveryTx[] => {
-    return transactions.map(item => {
+    const result: RecoveryTx[] = [];
+    for (const item of transactions) {
+      let newTX: RecoveryTx = { ...item };
       if (item.type === "erc20") {
         const data = item as ERC20Tx;
-        const newErc20tx: ERC20Tx = {
+        newTX = {
           type: data.type,
           info: data.info,
           symbol: data.symbol,
@@ -277,12 +286,11 @@ export const useRecoveryProcess = () => {
             ]) as `0x${string}`,
           },
         };
-        return newErc20tx;
       }
 
       if (item.type === "erc721") {
         const data = item as ERC721Tx;
-        const newErc721Tx: ERC721Tx = {
+        newTX = {
           type: data.type,
           info: data.info,
           symbol: data.symbol,
@@ -297,12 +305,11 @@ export const useRecoveryProcess = () => {
             ]) as `0x${string}`,
           },
         };
-        return newErc721Tx;
       }
 
       if (item.type === "erc1155") {
         const data = item as ERC1155Tx;
-        const newErc1155Tx: ERC1155Tx = {
+        newTX = {
           type: data.type,
           info: data.info,
           uri: data.uri,
@@ -320,16 +327,14 @@ export const useRecoveryProcess = () => {
             ]) as `0x${string}`,
           },
         };
-        return newErc1155Tx;
       }
-
-      return item;
-    });
+      result.push(newTX);
+    }
+    return result;
   };
 
   const startRecoveryProcess = async ({
     safeAddress,
-    totalGas,
     currentBundleId,
     hackedAddress,
     transactions,
@@ -347,20 +352,19 @@ export const useRecoveryProcess = () => {
       setRpcParams,
     });
     if (changed) {
-      await signTransactionsStep({ totalGas, currentBundleId, hackedAddress, transactions });
+      await signTransactionsStep({ currentBundleId, hackedAddress, transactions });
     }
   };
 
   const signTransactionsStep = async ({
-    totalGas,
     currentBundleId,
     hackedAddress,
     transactions,
-  }: Pick<IStartProcessProps, "totalGas" | "currentBundleId" | "hackedAddress" | "transactions">) => {
+  }: Pick<IStartProcessProps, "currentBundleId" | "hackedAddress" | "transactions">) => {
     setStepActive(RecoveryProcessStatus.PAY_GAS);
     try {
       // ////////// Cover the envisioned total gas fee from safe account
-      await payTheGas(totalGas, hackedAddress);
+      await payTheGas(transactions, hackedAddress);
       signRecoveryTransactions(hackedAddress, transactions, currentBundleId, true);
       return;
     } catch (e) {
