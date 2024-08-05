@@ -87,7 +87,9 @@ export const AutoDetectedAssetItem = ({ onClick, isSelected, tx, isLoading, imag
           height={60}
           src={
             image
-              ? image
+              ? image.includes("ipfs://")
+                ? image.replace("ipfs://", "https://ipfs.io/ipfs/")
+                : image
               : tx?.type === "erc20"
               ? ERC20Svg.src
               : tx?.type === "custom" || tx?.type === "custom-abininja"
