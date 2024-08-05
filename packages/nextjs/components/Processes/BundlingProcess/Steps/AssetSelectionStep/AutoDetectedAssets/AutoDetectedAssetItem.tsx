@@ -55,7 +55,7 @@ export const AutoDetectedAssetItem = ({ onClick, isSelected, tx, isLoading, imag
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       onClick={onClick}
-      className={`${isSelected ? "bg-base-200" : ""} ${styles.assetItem}  ${false ? styles.loading : ""}`}
+      className={`${isSelected ? "bg-base-200" : ""} ${styles.assetItem}  ${isLoading ? styles.loading : ""}`}
     >
       <div className={`${styles.logoContainer}`}>
         <img
