@@ -77,7 +77,7 @@ export const useRecoveryProcess = () => {
     if (!address) {
       setStepActive(RecoveryProcessStatus.NO_CONNECTED_ACCOUNT);
       return false;
-    } else if (address != safeAddress || safeAddress == DUMMY_ADDRESS) {
+    } else if (address != safeAddress || safeAddress == DUMMY_ADDRESS || address == DUMMY_ADDRESS) {
       setStepActive(RecoveryProcessStatus.NO_SAFE_ACCOUNT);
       return false;
     }
@@ -260,10 +260,12 @@ export const useRecoveryProcess = () => {
     safeAddress: string;
     hackedAddress: string;
   }): RecoveryTx[] => {
-    return transactions.map(item => {
+    const result:  RecoveryTx[]  = []
+    for (const item of transactions) {
+      let newTX:RecoveryTx = {...item}
       if (item.type === "erc20") {
         const data = item as ERC20Tx;
-        const newErc20tx: ERC20Tx = {
+        newTX= {
           type: data.type,
           info: data.info,
           symbol: data.symbol,
@@ -277,12 +279,11 @@ export const useRecoveryProcess = () => {
             ]) as `0x${string}`,
           },
         };
-        return newErc20tx;
       }
 
       if (item.type === "erc721") {
         const data = item as ERC721Tx;
-        const newErc721Tx: ERC721Tx = {
+        newTX= {
           type: data.type,
           info: data.info,
           symbol: data.symbol,
@@ -297,12 +298,11 @@ export const useRecoveryProcess = () => {
             ]) as `0x${string}`,
           },
         };
-        return newErc721Tx;
       }
 
       if (item.type === "erc1155") {
         const data = item as ERC1155Tx;
-        const newErc1155Tx: ERC1155Tx = {
+        newTX= {
           type: data.type,
           info: data.info,
           uri: data.uri,
@@ -320,11 +320,10 @@ export const useRecoveryProcess = () => {
             ]) as `0x${string}`,
           },
         };
-        return newErc1155Tx;
       }
-
-      return item;
-    });
+      result.push(newTX)
+    }
+    return result;
   };
 
   const startRecoveryProcess = async ({
