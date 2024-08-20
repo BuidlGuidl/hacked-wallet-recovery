@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
 import { useShowError } from "./useShowError";
-import { InfuraProvider } from "@ethersproject/providers";
+import { AlchemyProvider } from "@ethersproject/providers";
 import { FlashbotsBundleProvider } from "@flashbots/ethers-provider-bundle";
 import { BigNumber, ethers } from "ethers";
 import { useLocalStorage } from "usehooks-ts";
 import { v4 } from "uuid";
 import { useAccount, usePublicClient, useWalletClient } from "wagmi";
+import scaffoldConfig from "~~/scaffold.config";
 import { ERC20Tx, ERC721Tx, ERC1155Tx, RecoveryTx } from "~~/types/business";
 import { RecoveryProcessStatus } from "~~/types/enums";
 import { DUMMY_ADDRESS, ERC20_ABI, ERC721_ABI, ERC1155_ABI } from "~~/utils/constants";
@@ -32,7 +33,7 @@ const flashbotSigner = ethers.Wallet.createRandom();
 export const useRecoveryProcess = () => {
   const targetNetwork = getTargetNetwork();
   const [flashbotsProvider, setFlashbotsProvider] = useState<FlashbotsBundleProvider>();
-  const [infuraProvider, setInfuraProvider] = useState<InfuraProvider>();
+  const [mainnetProvider, setMainnetProvider] = useState<AlchemyProvider>();
   const [gasCovered, setGasCovered] = useState<boolean>(false);
   const [sentTxHash, setSentTxHash] = useLocalStorage<string>("sentTxHash", "");
   const [sentBlock, setSentBlock] = useLocalStorage<number>("sentBlock", 0);
@@ -49,11 +50,11 @@ export const useRecoveryProcess = () => {
   useEffect(() => {
     (async () => {
       if (!targetNetwork || !targetNetwork.blockExplorers) return;
-      const infuraProvider = new ethers.providers.InfuraProvider(targetNetwork.id);
-      setInfuraProvider(infuraProvider);
+      const mainnetProvider = new ethers.providers.AlchemyProvider(targetNetwork.id, scaffoldConfig.alchemyApiKey);
+      setMainnetProvider(mainnetProvider);
       setFlashbotsProvider(
         await FlashbotsBundleProvider.create(
-          infuraProvider,
+          mainnetProvider,
           flashbotSigner,
           FLASHBOTS_RELAY_ENDPOINT,
           targetNetwork.network == "goerli" ? "goerli" : undefined,
@@ -94,7 +95,7 @@ export const useRecoveryProcess = () => {
   };
 
   const getEstimatedTxFees = async () => {
-    const block = await infuraProvider?.getBlock("latest");
+    const block = await mainnetProvider?.getBlock("latest");
     if (block) {
       const maxBaseFeeInFutureBlock = FlashbotsBundleProvider.getMaxBaseFeeInFutureBlock(
         block.baseFeePerGas as BigNumber,
