@@ -18,6 +18,7 @@ interface IProps {
   totalGasEstimate: BigNumber;
   unsignedTxs: RecoveryTx[];
   setHackedAddress: Dispatch<SetStateAction<string>>;
+  setSafeAddress:Dispatch<SetStateAction<string>>;
   setUnsignedTxs: Dispatch<SetStateAction<RecoveryTx[]>>;
   setIsOnBasket: Dispatch<SetStateAction<boolean>>;
   setTotalGasEstimate: Dispatch<SetStateAction<BigNumber>>;
@@ -29,6 +30,7 @@ export const BundlingProcess = ({
   hackedAddress,
   safeAddress,
   totalGasEstimate,
+  setSafeAddress,
   unsignedTxs,
   setHackedAddress,
   setTotalGasEstimate,
@@ -48,6 +50,7 @@ export const BundlingProcess = ({
       setSelectedAssetIndices([]);
       setUnsignedTxs([]);
       setHackedAddress("");
+      setSafeAddress("")
       localStorage.clear();
     },
     fromAssetSelectionToBundling: (txsToAdd: RecoveryTx[]) => {
@@ -75,7 +78,7 @@ export const BundlingProcess = ({
 
   return (
     <motion.div className={styles.bundling} initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-      <SideBar activeStep={activeStep} hackedAddress={hackedAddress}/>
+      <SideBar activeStep={activeStep} hackedAddress={hackedAddress} safeAddress={safeAddress}/>
       <div className={`${styles.content} bg-base-300`}>
         <AssetSelectionStep
           isVisible={activeStep === BundlingSteps.ASSET_SELECTION}

@@ -3,7 +3,6 @@ import dynamic from "next/dynamic";
 import { BigNumber } from "ethers";
 import { NextPage } from "next";
 import { useLocalStorage } from "usehooks-ts";
-import { parseEther } from "viem";
 import { useAccount, usePrepareSendTransaction, useSendTransaction } from "wagmi";
 import { CustomPortal } from "~~/components/CustomPortal/CustomPortal";
 import { MetaHeader } from "~~/components/MetaHeader";
@@ -15,7 +14,8 @@ import { useShowError } from "~~/hooks/flashbotRecoveryBundle/useShowError";
 import ErrorSvg from "~~/public/assets/flashbotRecovery/error.svg";
 import GasSvg from "~~/public/assets/flashbotRecovery/gas-illustration.svg";
 import { BundlingSteps, RecoveryProcessStatus } from "~~/types/enums";
-import { CONTRACT_ADDRESS, DUMMY_ADDRESS } from "~~/utils/constants";
+import { CONTRACT_ADDRESS } from "~~/utils/constants";
+import { parseEther } from "viem";
 
 interface IRPCParams {
   chainId: string;
@@ -31,7 +31,7 @@ interface IRPCParams {
 
 const Home: NextPage = () => {
   const { isConnected: walletConnected, address: connectedAddress } = useAccount();
-  const [safeAddress, setSafeAddress] = useState(DUMMY_ADDRESS);
+  const [safeAddress, setSafeAddress] = useLocalStorage<string>("safeAddress", "");
   const [hackedAddress, setHackedAddress] = useLocalStorage<string>("hackedAddress", "");
   const [totalGasEstimate, setTotalGasEstimate] = useState<BigNumber>(BigNumber.from("0"));
   const [rpcParams, setRpcParams] = useState<IRPCParams>();
@@ -154,7 +154,10 @@ const Home: NextPage = () => {
           alignItems: "center",
         }}
       >
-        <HackedAddressProcess isVisible={!hackedAddress} onSubmit={newAddress => setHackedAddress(newAddress)} />
+        <HackedAddressProcess isVisible={!hackedAddress} onSubmit={(hacked, safe) => {
+          setHackedAddress(hacked)
+          setSafeAddress(safe)
+        }} />
 
         <BundlingProcess
           isVisible={!!hackedAddress}
@@ -164,6 +167,7 @@ const Home: NextPage = () => {
           totalGasEstimate={totalGasEstimate}
           unsignedTxs={unsignedTxs}
           setHackedAddress={setHackedAddress}
+          setSafeAddress={setSafeAddress}
           setUnsignedTxs={setUnsignedTxs}
           setIsOnBasket={setIsOnBasket}
           setTotalGasEstimate={setTotalGasEstimate}
