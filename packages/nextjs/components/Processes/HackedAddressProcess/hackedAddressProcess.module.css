@@ -60,3 +60,9 @@
 .buttonContainer > div > div > div {
   display: none;
 }
+.infoBox {
+  font-size: 13px;
+  background-color: rgb(36, 49, 72);
+  line-height: 17px;
+  padding: 10px;
+}

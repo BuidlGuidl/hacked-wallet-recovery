@@ -33,11 +33,15 @@ export const HackedAddressProcess = ({ isVisible, onSubmit }: IProps) => {
             src={IllustrationSvg}
             alt="An ethereum icon with nfts and tokens around"
           />
-          <div className="mt-4" />
           <h2 className={`${styles.text} text-secondary-content`}>Let&apos;s search what assets we can recover</h2>
+          <h2 className={`${styles.text} text-secondary-content ${styles.infoBox}`}>
+            This app can help you move assets on Ethereum mainnet that are stuck in a wallet that has been hacked. As
+            you probably have found out, it is common practice for hackers to sweep any funds going to or from your
+            wallet. Using Flashbots we can get around their tactics and recover assets still in your wallet.
+          </h2>
           <div className="mt-4" />
 
-          <label className={`w-full`}>Hacked address</label>
+          <label className={`w-full`}>Your hacked wallet address</label>
           <AddressInput
             name="addressInput"
             value={hackedAddress}
@@ -45,7 +49,7 @@ export const HackedAddressProcess = ({ isVisible, onSubmit }: IProps) => {
             onChange={(val: string) => setHackedAddressCore(val)}
           />
           <div className="mt-4" />
-          <label className={`w-full`}>Address to receive your assets</label>
+          <label className={`w-full`}>Where do you want to send the assets?</label>
           <AddressInput
             name="addressInput"
             value={safeAddress}
