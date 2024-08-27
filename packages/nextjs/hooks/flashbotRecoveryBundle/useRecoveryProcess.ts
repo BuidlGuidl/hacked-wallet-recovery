@@ -9,7 +9,7 @@ import { useAccount, usePublicClient, useWalletClient } from "wagmi";
 import scaffoldConfig from "~~/scaffold.config";
 import { ERC20Tx, ERC721Tx, ERC1155Tx, RecoveryTx } from "~~/types/business";
 import { RecoveryProcessStatus } from "~~/types/enums";
-import { DUMMY_ADDRESS, ERC20_ABI, ERC721_ABI, ERC1155_ABI } from "~~/utils/constants";
+import { ERC20_ABI, ERC721_ABI, ERC1155_ABI } from "~~/utils/constants";
 import { getTargetNetwork } from "~~/utils/scaffold-eth";
 
 const erc721Interface = new ethers.utils.Interface(ERC721_ABI);
@@ -76,7 +76,7 @@ export const useRecoveryProcess = () => {
     if (!address) {
       setStepActive(RecoveryProcessStatus.NO_CONNECTED_ACCOUNT);
       return false;
-    } else if (address != safeAddress || safeAddress == DUMMY_ADDRESS || address == DUMMY_ADDRESS) {
+    } else if (address != safeAddress) {
       setStepActive(RecoveryProcessStatus.NO_SAFE_ACCOUNT);
       return false;
     }
@@ -313,6 +313,7 @@ export const useRecoveryProcess = () => {
         newTX = {
           type: data.type,
           info: data.info,
+          //@ts-ignore
           uri: data.uri,
           tokenIds: data.tokenIds,
           amounts: data.amounts,
