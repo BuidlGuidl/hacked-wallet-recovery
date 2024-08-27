@@ -70,7 +70,7 @@ export const AutoDetectedAssetItem = ({ onClick, isSelected, tx, isLoading, imag
       // @ts-ignore
       titleContent = tx.info;
     }
-    return <h3>{titleContent}</h3>;
+    return <h4>{titleContent}</h4>;
   };
   return (
     <motion.div
