@@ -50,7 +50,10 @@ export const useRecoveryProcess = () => {
   useEffect(() => {
     (async () => {
       if (!targetNetwork || !targetNetwork.blockExplorers) return;
-      const mainnetProvider = new ethers.providers.AlchemyProvider(targetNetwork.id, scaffoldConfig.alchemyApiKey);
+      const mainnetProvider = new ethers.providers.AlchemyProvider(
+        targetNetwork.id,
+        scaffoldConfig.alchemyApiKey2 || scaffoldConfig.alchemyApiKey,
+      );
       setMainnetProvider(mainnetProvider);
       setFlashbotsProvider(
         await FlashbotsBundleProvider.create(
