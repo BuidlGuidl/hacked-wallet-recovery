@@ -33,17 +33,17 @@ export const InputBase = <T extends { toString: () => string } | undefined = str
   );
 
   return (
-    <div className={`flex border-2 border-base-300 bg-base-200 rounded-full text-accent ${modifier}`}>
+    <div className={`flex border-2 border-base-300 bg-base-200 !rounded-full text-accent ${modifier}`}>
       {prefix}
       <input
-        className="input input-ghost focus:outline-none focus:bg-transparent focus:text-gray-400 h-[2.2rem] min-h-[2.2rem] px-4 border w-full font-medium text-gray-400 placeholder-gray-200 placeholder-opacity-10"
+        className="input input-ghost focus:outline-none !rounded-full focus:bg-transparent focus:text-gray-400 h-[2.2rem] min-h-[2.2rem] px-4 border w-full font-medium text-gray-400 placeholder-gray-200 placeholder-opacity-10"
         placeholder={placeholder}
         name={name}
         value={value?.toString()}
         onChange={handleChange}
         disabled={disabled}
         autoComplete="off"
-        style={{background: "#243148"}}
+        style={{ background: "#243148" }}
       />
       {suffix}
     </div>
