@@ -99,7 +99,7 @@ export const useAutodetectAssets = () => {
       erc721transfers: AssetTransfersResult[] = [],
       erc1155transfers: AssetTransfersResult[] = [],
       erc1155Minimal: NftMetadataBatchToken[] = [],
-      erc721Minimal: NftMetadataBatchToken[] = []
+      erc721Minimal: NftMetadataBatchToken[] = [];
     try {
       (await fetchAllAssetTransfersOfHackedAccount(hackedAddress)).forEach(tx => {
         if (tx.category == AssetTransfersCategory.ERC20) {
@@ -267,6 +267,15 @@ export const useAutodetectAssets = () => {
             /* ignore */
           }
 
+          // Find the transfer that matches this contract to get decimals
+          const relevantTransfer = erc20transfers.find(
+            tx => tx.rawContract?.address?.toLowerCase() === erc20contract.toLowerCase(),
+          );
+
+          const decimals = relevantTransfer?.rawContract?.decimal
+            ? parseInt(relevantTransfer.rawContract.decimal, 16)
+            : 18;
+
           const newErc20tx: ERC20Tx = {
             type: "erc20",
             info: `ERC20 - ${tokenSymbol != "???" ? `${tokenSymbol}` : `${erc20contract}`}`,
@@ -280,6 +289,7 @@ export const useAutodetectAssets = () => {
                 BigNumber.from(erc20balance),
               ]) as `0x${string}`,
             },
+            decimals,
           };
           return newErc20tx;
         }),

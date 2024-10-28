@@ -28,16 +28,8 @@ export const AutoDetectedAssetItem = ({ onClick, isSelected, tx, isLoading, imag
       // @ts-ignore
       subtitleContent = `Token IDs: ${tx.tokenIds.map(hexId => BigInt(hexId).toString()).join(", ")}`;
     } else if (tx.type === "erc20") {
-      const decimals =
-        (
-          {
-            USDC: 6,
-            USDT: 6,
-            WBTC: 8,
-          } as Record<string, number>
-        )[(tx as { symbol: string }).symbol] ?? 18;
       // @ts-ignore
-      const formattedAmount = formatUnits(tx.amount, decimals);
+      const formattedAmount = formatUnits(tx.amount, tx.decimals);
       subtitleContent = formattedAmount;
     } else if (tx.type === "custom") {
       subtitleContent = tx.info.split(" to ")[1];
