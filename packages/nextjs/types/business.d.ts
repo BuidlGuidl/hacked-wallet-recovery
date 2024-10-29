@@ -26,6 +26,7 @@ export interface CustomTx extends ExtendedUnsignedTx {}
 export interface ERC20Tx extends ExtendedUnsignedTx {
   symbol: string;
   amount: string;
+  decimals: number;
 }
 
 export interface ERC721Tx extends ExtendedUnsignedTx {
