@@ -11,13 +11,12 @@ type MetaHeaderProps = {
 
 // Images must have an absolute path to work properly on Twitter.
 // We try to get it dynamically from Vercel, but we default to relative path.
-const baseUrl = process.env.NEXT_PUBLIC_VERCEL_URL ? `https://${process.env.NEXT_PUBLIC_VERCEL_URL}/` : "/";
+const baseUrl = process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}/` : "localhost:3005/";
 
 export const MetaHeader = ({
-  //TODO Modify after find an app name
-  title = "Hacked Wallet Recovery",
-  description = "I've successfully recovered my hacked assets using this powerful tool. #hackedwallet #BuidlGuidl",
-  image = "thumbnail.jpg",
+  title = "Hacked Wallet Recovery | Secure Ethereum Asset Recovery Tool",
+  description = "Instantly recover assets from hacked Ethereum wallets using Flashbots. Bypass malicious sweepers, and securely transfer ERC20, NFTs, and other tokens to safety. Free, open-source tool trusted by the Web3 community.",
+  image = "thumbnail.png",
   twitterCard = "summary_large_image",
   children,
 }: MetaHeaderProps) => {
