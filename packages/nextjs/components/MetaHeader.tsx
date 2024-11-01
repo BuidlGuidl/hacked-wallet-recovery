@@ -9,9 +9,7 @@ type MetaHeaderProps = {
   children?: React.ReactNode;
 };
 
-// Images must have an absolute path to work properly on Twitter.
-// We try to get it dynamically from Vercel, but we default to relative path.
-const baseUrl = process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}/` : "localhost:3005/";
+const baseUrl = "https://hackedwalletrecovery.com/";
 
 export const MetaHeader = ({
   title = "Hacked Wallet Recovery | Secure Ethereum Asset Recovery Tool",
