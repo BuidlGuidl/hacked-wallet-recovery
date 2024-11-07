@@ -34,6 +34,7 @@ export const AutoDetectedAssets = ({ isLoading, selectedAssets, selectAsset, acc
           <AutoDetectedAssetItem
             tx={item.tx}
             image={item.image}
+            format={item?.format}
             isLoading={false}
             isSelected={selectedAssets.indexOf(i) != -1}
             key={i}

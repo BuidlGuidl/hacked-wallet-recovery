@@ -69,12 +69,15 @@ export const useAutodetectAssets = () => {
   const getNftMetadata = async (minimalNfts: NftMetadataBatchToken[]) => {
     let result = await alchemy.nft.getNftMetadataBatch(minimalNfts);
 
-    return result.map(item => ({
-      contractAddress: item.contract,
-      image: item.rawMetadata?.image,
-      tokenId: item.tokenId,
-      type: item.tokenType,
-    }));
+    return result.map(item => {
+      return {
+        contractAddress: item.contract,
+        image: item.rawMetadata?.image,
+        format: item.media?.[0]?.format,
+        tokenId: item.tokenId,
+        type: item.tokenType,
+      };
+    });
   };
 
   const getAutodetectedAssets = async (
@@ -386,6 +389,7 @@ export const useAutodetectAssets = () => {
           return newErc1155Tx;
         }),
       );
+
       const allMinimalNft = [...erc1155Minimal, ...erc721Minimal];
       const allMetadata = allMinimalNft.length > 0 ? await getNftMetadata(allMinimalNft) : [];
       const result: IWrappedRecoveryTx[] = [
@@ -398,14 +402,28 @@ export const useAutodetectAssets = () => {
           let metadata = allMetadata.find(meta => meta.tokenId === tx721.tokenId);
           return {
             image: metadata?.image,
+            format: metadata?.format,
             tx: tx,
           };
         }
         if (tx.type === "erc1155") {
           let tx1155 = tx as ERC1155Tx;
-          let metadata = allMetadata.find(meta => tx1155.tokenIds.includes(meta.tokenId));
+          let metadata = allMetadata.find(meta => {
+            // Convert both tokenIds to BigInt for comparison to handle both hex and decimal formats
+            const metaTokenIdBigInt = BigInt(meta.tokenId);
+            return tx1155.tokenIds.some(tokenId => {
+              try {
+                const txTokenIdBigInt = BigInt(tokenId);
+                return metaTokenIdBigInt === txTokenIdBigInt;
+              } catch (e) {
+                console.error("Error converting tokenId to BigInt:", tokenId);
+                return false;
+              }
+            });
+          });
           return {
             image: metadata?.image,
+            format: metadata?.format,
             tx: tx,
           };
         }

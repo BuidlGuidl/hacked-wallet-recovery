@@ -25,6 +25,7 @@
   height: 60px;
   margin-right: 16px;
   border-radius: 8px;
+  object-fit: contain;
 }
 
 .logoContainer {
