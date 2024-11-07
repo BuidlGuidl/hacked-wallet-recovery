@@ -14,8 +14,9 @@ interface IAssetProps {
   isSelected: boolean;
   tx?: RecoveryTx;
   isLoading: boolean;
+  format?: string;
 }
-export const AutoDetectedAssetItem = ({ onClick, isSelected, tx, isLoading, image }: IAssetProps) => {
+export const AutoDetectedAssetItem = ({ onClick, isSelected, tx, isLoading, image, format }: IAssetProps) => {
   const getSubtitleTitle = (): JSX.Element => {
     if (!tx) {
       return <></>;
@@ -82,30 +83,48 @@ export const AutoDetectedAssetItem = ({ onClick, isSelected, tx, isLoading, imag
       className={`${isSelected ? "bg-base-200" : ""} ${styles.assetItem}  ${isLoading ? styles.loading : ""}`}
     >
       <div className={`${styles.logoContainer}`}>
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          className={styles.logo}
-          width={60}
-          height={60}
-          src={
-            image
-              ? image.includes("ipfs://")
-                ? image.replace("ipfs://", "https://ipfs.io/ipfs/")
-                : image
-              : tx?.type === "erc20"
-              ? ERC20Svg.src
-              : tx?.type === "custom" || tx?.type === "custom-abininja"
-              ? TransactionsSvg.src
-              : EmptySvg.src
-          }
-          alt=""
-        />
+        {format === "mp4" ? (
+          <video
+            className={styles.logo}
+            width={60}
+            height={60}
+            autoPlay
+            loop
+            muted
+            src={
+              image
+                ? image.includes("ipfs://")
+                  ? image.replace("ipfs://", "https://ipfs.io/ipfs/")
+                  : image
+                : undefined
+            }
+          />
+        ) : (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            className={styles.logo}
+            width={60}
+            height={60}
+            src={
+              image
+                ? image.includes("ipfs://")
+                  ? image.replace("ipfs://", "https://ipfs.io/ipfs/")
+                  : image
+                : tx?.type === "erc20"
+                ? ERC20Svg.src
+                : tx?.type === "custom" || tx?.type === "custom-abininja"
+                ? TransactionsSvg.src
+                : EmptySvg.src
+            }
+            alt=""
+          />
+        )}
         {tx?.type === "erc20" ? <span className={styles.coinTitle}>ERC20</span> : ""}
       </div>
 
-      <div className={`${styles.data} truncate w-fit`}>
-        <h3>{getTitle()}</h3>
-        <span className="overflow-hidden text-ellipsis flex-nowrap">{getSubtitleTitle()}</span>
+      <div className={`${styles.data} truncate max-w-[300px]`}>
+        <h3 className="truncate">{getTitle()}</h3>
+        <span className="truncate block">{getSubtitleTitle()}</span>
       </div>
     </motion.div>
   );
