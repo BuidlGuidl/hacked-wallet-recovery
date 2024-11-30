@@ -8,7 +8,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  background: rgba(20, 28, 41, 0.40);
+  background: rgba(20, 28, 41, 0.4);
 }
 
 .modal {
@@ -19,11 +19,11 @@
   flex-shrink: 0;
   border-radius: 12px;
   box-shadow: 0px 0px 10px 5px rgba(0, 0, 0, 0.03);
-  height: 650px;
+  height: 850px;
 }
 
-.modalContent{
-    display: inline-flex;
+.modalContent {
+  display: inline-flex;
   flex-direction: column;
   align-items: center;
   gap: 40px;
@@ -32,48 +32,48 @@
   width: 90%;
 }
 
-.close{
-    align-self: flex-end;
-    margin-top: 14px;
-    margin-right: 14px;
-    cursor: pointer;
-    padding: 10px;
-    padding-bottom: 4px;
+.close {
+  align-self: flex-end;
+  margin-top: 14px;
+  margin-right: 14px;
+  cursor: pointer;
+  padding: 10px;
+  padding-bottom: 4px;
 }
 
-.title{
-    font-size: 24px;
-font-style: normal;
-font-weight: 700;
-line-height: 32px;
-margin:0;
-text-align: center;
+.title {
+  font-size: 24px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: 32px;
+  margin: 0;
+  text-align: center;
 }
 
-
-.text{
-    font-size: 18px;
-font-style: normal;
-font-weight: 400;
-line-height: 32px;
-width: 80%;
-text-align: center;
-margin: 0;
+.text {
+  font-size: 18px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 32px;
+  width: 80%;
+  text-align: center;
+  margin: 0;
 }
 
-.basicItem{
+.basicItem {
   display: flex;
-padding: 16px;
-flex-direction: column;
-justify-content: center;
-align-items: center;
-gap: 24px;
-border-radius: 12px;
-margin-top: 24px;
+  padding: 16px;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 24px;
+  border-radius: 12px;
+  margin-top: 24px;
 }
 
-
-.container, .containerCustom, .containerBasic{
+.container,
+.containerCustom,
+.containerBasic {
   position: relative;
   margin-bottom: 0;
   display: flex;
@@ -82,60 +82,61 @@ margin-top: 24px;
   margin: 0 auto;
   max-width: 490px;
 }
-.containerCustom{
+.containerCustom {
   height: 392px;
   width: 100%;
   padding: 0 10px;
   overflow-y: auto;
 }
-.containerBasic{
+.containerBasic {
   height: 538px;
   width: 100%;
   padding: 0 10px;
 }
 
-.list{
+.list {
   width: 490px;
   margin: 0 auto;
 }
-.label{
+.label {
   font-size: 16px;
-font-style: normal;
-font-weight: 600;
-line-height: normal;
-margin-bottom: 12px;
+  font-style: normal;
+  font-weight: 600;
+  line-height: normal;
+  margin-bottom: 12px;
 }
-.container > div{
+.container > div {
   border-radius: 4px;
   padding: 4px;
 }
-.containerCustom > div{
+.containerCustom > div {
   border-radius: 4px;
   padding: 4px;
 }
-.containerBasic > div{
+.containerBasic > div {
   border-radius: 4px;
   padding: 4px;
 }
-.contract{
+.contract {
   margin-top: 20px;
 }
 
-.contract > div >div div{
+.contract > div > div div {
   border-radius: 4px;
   padding: 4px;
 }
-.contract > div >div div input::placeholder { /* Chrome, Firefox, Opera, Safari 10.1+ */
+.contract > div > div div input::placeholder {
+  /* Chrome, Firefox, Opera, Safari 10.1+ */
   color: rgb(156 163 175 / var(--tw-text-opacity));
   opacity: 1; /* Firefox */
 }
-.contract > div >div div:last-child{
+.contract > div > div div:last-child {
   display: flex;
   justify-content: center;
   align-items: center;
- }
- .contract > div >div div:last-child button{
-  background-color: #17A9E8;
+}
+.contract > div > div div:last-child button {
+  background-color: #17a9e8;
 
   color: #293853;
   width: 230px;
@@ -147,17 +148,17 @@ margin-bottom: 12px;
   font-weight: 700;
   line-height: normal;
   border: 1px solid;
- }
+}
 
-.bottom{
+.bottom {
   flex-grow: 1;
 }
- .contract > div >div div:last-child button svg{
+.contract > div > div div:last-child button svg {
   display: none;
- }
+}
 
- .back{
+.back {
   position: absolute;
   top: 0;
   cursor: pointer;
- }
+}
