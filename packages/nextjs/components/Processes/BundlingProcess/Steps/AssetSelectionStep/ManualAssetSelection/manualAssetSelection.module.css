@@ -19,7 +19,9 @@
   flex-shrink: 0;
   border-radius: 12px;
   box-shadow: 0px 0px 10px 5px rgba(0, 0, 0, 0.03);
-  height: 850px;
+  min-height: 600px;
+  max-height: 900px;
+  height: 80vh;
 }
 
 .modalContent {

@@ -54,9 +54,9 @@ export const AbiNinjaFlow = ({ addUnsignedTx }: { addUnsignedTx: (asset: IWrappe
   return (
     <div className="flex flex-col gap-1">
       {hackedWalletAddress && (
-        <div className="flex items-center flex-col flex-grow p-4 rounded-md h-[650px]">
-          <div className="border-2 border-gray-200 rounded-md w-full h-full">
-            <div className="w-full rounded-md p-1 h-full">
+        <div className="flex items-center flex-col flex-grow p-4 rounded-md h-[55vh] 2xl:h-[80vh]">
+          <div className="border-2 border-gray-500 rounded-md w-full overflow-auto">
+            <div className="w-full rounded-md p-1 h-[650px]">
               <ImpersonatorIframe
                 key={selectedNetwork.name + hackedWalletAddress + appUrl}
                 height="100%"
