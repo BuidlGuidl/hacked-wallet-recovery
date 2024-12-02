@@ -269,7 +269,6 @@ export const useRecoveryProcess = () => {
     safeAddress: string;
     hackedAddress: string;
   }): RecoveryTx[] => {
-    console.log("DEBUG: generateCorrectTransactions", safeAddress);
     const result: RecoveryTx[] = [];
     for (const item of transactions) {
       let newTX: RecoveryTx = { ...item };
@@ -347,7 +346,6 @@ export const useRecoveryProcess = () => {
   }: IStartProcessProps & IChangeRPCProps) => {
     const isValid = validateBundleIsReady(safeAddress);
     if (!isValid) {
-      console.log("DEBUG: isValid", isValid); // gives false
       return;
     }
     //////// Enforce switching to flashbots RPC
