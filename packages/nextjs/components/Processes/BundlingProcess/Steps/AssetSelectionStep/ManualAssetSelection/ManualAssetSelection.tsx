@@ -38,7 +38,7 @@ export const ManualAssetSelection = ({ isVisible, close, safeAddress, addAsset, 
         </span>
         <div className={`${styles.modalContent}`}>
           <h3 className={`${styles.title}`}>{"Add assets manually"}</h3>
-          <Tabs tabTitles={["Basic", "Custom", "Raw", "AbiNinja"]}>
+          <Tabs tabTitles={["Basic", "Custom", "Raw", "ABI Ninja"]}>
             {active => {
               const isBasic = active == 0;
               if (isBasic) {
