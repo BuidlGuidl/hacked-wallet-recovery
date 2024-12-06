@@ -64,7 +64,6 @@ const Home: NextPage = () => {
   } = useSendTransaction(config);
 
   const startSigning = (address: string) => {
-    console.log("DEBUG: startSigning", unsignedTxs);
     const transformedTransactions = generateCorrectTransactions({
       transactions: unsignedTxs,
       safeAddress: address,
@@ -74,17 +73,15 @@ const Home: NextPage = () => {
     signRecoveryTransactions(hackedAddress, unsignedTxs, currentBundleId, false);
   };
 
-  const startRecovery = (safe: string) => {
-    console.log("DEBUG: startRecovery", unsignedTxs);
-    setSafeAddress(safe);
+  const startRecovery = () => {
     const transformedTransactions = generateCorrectTransactions({
       transactions: unsignedTxs,
-      safeAddress: safe,
+      safeAddress,
       hackedAddress,
     });
     setUnsignedTxs(transformedTransactions);
     startRecoveryProcess({
-      safeAddress: safe,
+      safeAddress,
       hackedAddress,
       currentBundleId,
       transactions: transformedTransactions,
@@ -184,7 +181,7 @@ const Home: NextPage = () => {
           startSigning={address => startSigning(address)}
           totalGasEstimate={totalGasEstimate}
           showTipsModal={showTipsModal}
-          startProcess={add => startRecovery(add)}
+          startProcess={startRecovery}
           attemptedBlock={attemptedBlock}
           connectedAddress={connectedAddress}
           safeAddress={safeAddress}

@@ -79,10 +79,8 @@ export const useRecoveryProcess = () => {
     if (!address) {
       setStepActive(RecoveryProcessStatus.NO_CONNECTED_ACCOUNT);
       return false;
-    } else if (address != safeAddress) {
-      setStepActive(RecoveryProcessStatus.NO_SAFE_ACCOUNT);
-      return false;
     }
+    // there was a piece of code RETURNING early if the safe address is not equal to the connected address
     return true;
   };
 
