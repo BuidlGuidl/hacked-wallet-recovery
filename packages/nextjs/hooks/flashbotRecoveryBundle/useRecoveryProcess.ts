@@ -95,7 +95,6 @@ export const useRecoveryProcess = () => {
 
   const changeFlashbotNetwork = async ({ modifyBundleId, setRpcParams }: IChangeRPCProps) => {
     const bundleId = v4();
-    console.log("bundleId at line 98, useRecoveryProcess", bundleId);
     const { result, params } = await addRelayRPC(bundleId);
     modifyBundleId(bundleId);
     if (!result) {
@@ -169,7 +168,6 @@ export const useRecoveryProcess = () => {
         if (tx.toSign) {
           // Numbers are stored as strings so we need to convert to BigInts
           const { to, from, data, type, maxFeePerGas, maxPriorityFeePerGas, gas } = tx.toSign;
-          console.log("tx.toSign at line 171, useRecoveryProcess", tx.toSign);
           const readyToSignTx = {
             to,
             from,
@@ -179,12 +177,10 @@ export const useRecoveryProcess = () => {
             maxPriorityFeePerGas: BigInt(maxPriorityFeePerGas as string),
             gas: BigInt(gas as string),
           };
-          console.log("readyToSignTx at line 180, useRecoveryProcess", readyToSignTx);
           await walletClient?.sendTransaction(readyToSignTx);
         }
       }
       setGasCovered(false);
-      console.log("currentBundleId at line 186, useRecoveryProcess", currentBundleId);
       await sendBundle(currentBundleId);
     } catch (e) {
       showError(`FAILED TO SIGN TXS Error: ${e}`);
@@ -236,7 +232,6 @@ export const useRecoveryProcess = () => {
           });
 
           const parsedResponse = await response.json();
-          console.log("DEBUG", parsedResponse);
           // Success
           if (parsedResponse.success) {
             setStepActive(RecoveryProcessStatus.SUCCESS);

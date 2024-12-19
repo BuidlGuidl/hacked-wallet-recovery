@@ -58,7 +58,6 @@ export const useAutodetectAssets = () => {
       for (const token of erc20Balances.tokenBalances) {
         // Convert hex to BigInt and check if it's zero
         const balance = BigInt(token.tokenBalance || "0");
-        console.log("Balance in erc20 loop", balance);
         if (balance === BigInt(0)) continue;
 
         const metadata = await alchemy.core.getTokenMetadata(token.contractAddress);
