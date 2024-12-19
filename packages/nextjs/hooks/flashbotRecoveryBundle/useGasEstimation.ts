@@ -16,7 +16,7 @@ export const useGasEstimation = () => {
   const [alchemy] = useState<Alchemy>(
     new Alchemy({
       apiKey: alchemyApiKey,
-      network: targetNetwork.network == "goerli" ? Network.ETH_GOERLI : Network.ETH_MAINNET,
+      network: targetNetwork.network == "sepolia" ? Network.ETH_SEPOLIA : Network.ETH_MAINNET,
     }),
   );
   const { showError } = useShowError();
@@ -27,7 +27,7 @@ export const useGasEstimation = () => {
   ) => {
     try {
       let estimates: BigNumber[] = [];
-      if (txs.length <= 3 && targetNetwork.network != "goerli") {
+      if (txs.length <= 3 && targetNetwork.network != "sepolia") {
         // Try to estimate the gas for the entire bundle
         const bundle = [...txs.map(tx => tx.toEstimate)];
         // TODO: Add catching so that if the bundle hasn't changed we don't need to call Alchemy again

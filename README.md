@@ -87,7 +87,7 @@ You can join this [Telegram group](https://t.me/+1rbnZWGTpJExOGJh) for help when
 Make a copy of `packages/nextjs/.env.example` and name it `.env.local`
 Adjust the following variables in that file:
 For `NEXT_PUBLIC_ALCHEMY_API_KEY` enter an [Alchemy](https://www.alchemy.com/) API key.
-For `NEXT_PUBLIC_NETWORK_KEY` leave it blank and it will default to Goerli (Flashbots on Goerli was broken last I checked 🙃) or you can enter 'mainnet' to use mainnet.
+For `NEXT_PUBLIC_NETWORK_KEY` leave it blank and it will default to Sepolia or you can enter 'mainnet' to use mainnet.
 For `NEXT_PUBLIC_SHOW_DONATIONS` can be left blank unless you want to see the donations prompt at the end of the recovery process.
 
 Then run the following commands:
