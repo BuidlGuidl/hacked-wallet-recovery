@@ -1,16 +1,17 @@
 import { useEffect, useState } from "react";
 import { useShowError } from "./useShowError";
-import { AlchemyProvider } from "@ethersproject/providers";
+import { AlchemyProvider, JsonRpcProvider } from "@ethersproject/providers";
 import { FlashbotsBundleProvider } from "@flashbots/ethers-provider-bundle";
 import { BigNumber, ethers } from "ethers";
 import { useLocalStorage } from "usehooks-ts";
 import { v4 } from "uuid";
 import { useAccount, usePublicClient, useWalletClient } from "wagmi";
+import * as chains from "wagmi/chains";
 import scaffoldConfig from "~~/scaffold.config";
 import { ERC20Tx, ERC721Tx, ERC1155Tx, RecoveryTx } from "~~/types/business";
 import { RecoveryProcessStatus } from "~~/types/enums";
 import { ERC20_ABI, ERC721_ABI, ERC1155_ABI } from "~~/utils/constants";
-import { getTargetNetwork } from "~~/utils/scaffold-eth";
+import { getNetworkConfig, getTargetNetwork } from "~~/utils/scaffold-eth";
 
 const erc721Interface = new ethers.utils.Interface(ERC721_ABI);
 const erc1155Interface = new ethers.utils.Interface(ERC1155_ABI);
@@ -32,8 +33,9 @@ const flashbotSigner = ethers.Wallet.createRandom();
 
 export const useRecoveryProcess = () => {
   const targetNetwork = getTargetNetwork();
+  const networkConfig = getNetworkConfig(targetNetwork);
   const [flashbotsProvider, setFlashbotsProvider] = useState<FlashbotsBundleProvider>();
-  const [mainnetProvider, setMainnetProvider] = useState<AlchemyProvider>();
+  const [mainnetProvider, setMainnetProvider] = useState<AlchemyProvider | JsonRpcProvider>();
   const [gasCovered, setGasCovered] = useState<boolean>(false);
   const [sentTxHash, setSentTxHash] = useLocalStorage<string>("sentTxHash", "");
   const [sentBlock, setSentBlock] = useLocalStorage<number>("sentBlock", 0);
@@ -45,31 +47,39 @@ export const useRecoveryProcess = () => {
   const { address } = useAccount();
 
   const { data: walletClient } = useWalletClient();
-  const FLASHBOTS_RELAY_ENDPOINT = `https://relay${targetNetwork.network == "goerli" ? "-goerli" : ""}.flashbots.net/`;
+
   const [unsignedTxs, setUnsignedTxs] = useLocalStorage<RecoveryTx[]>("unsignedTxs", []);
   useEffect(() => {
     (async () => {
       if (!targetNetwork || !targetNetwork.blockExplorers) return;
-      const mainnetProvider = new ethers.providers.AlchemyProvider(
-        targetNetwork.id,
-        scaffoldConfig.alchemyApiKey2 || scaffoldConfig.alchemyApiKey,
-      );
-      setMainnetProvider(mainnetProvider);
+
+      // Create provider based on network
+      const provider =
+        targetNetwork.id === chains.sepolia.id
+          ? new ethers.providers.JsonRpcProvider(
+              `https://eth-sepolia.g.alchemy.com/v2/${scaffoldConfig.alchemyApiKey2 || scaffoldConfig.alchemyApiKey}`,
+            )
+          : new ethers.providers.AlchemyProvider(
+              targetNetwork.id,
+              scaffoldConfig.alchemyApiKey2 || scaffoldConfig.alchemyApiKey,
+            );
+
+      setMainnetProvider(provider);
       setFlashbotsProvider(
         await FlashbotsBundleProvider.create(
-          mainnetProvider,
+          provider,
           flashbotSigner,
-          FLASHBOTS_RELAY_ENDPOINT,
-          targetNetwork.network == "goerli" ? "goerli" : undefined,
+          networkConfig.relayUrl,
+          targetNetwork.id === chains.sepolia.id ? "sepolia" : undefined,
         ),
       );
     })();
-  }, [targetNetwork.id]);
+  }, []);
 
   const resetStatus = () => {
     setStepActive(RecoveryProcessStatus.INITIAL);
   };
-  const validateBundleIsReady = (safeAddress: string) => {
+  const validateBundleIsReady = () => {
     if (gasCovered) {
       setStepActive(RecoveryProcessStatus.GAS_PAID);
       return false;
@@ -80,7 +90,6 @@ export const useRecoveryProcess = () => {
       setStepActive(RecoveryProcessStatus.NO_CONNECTED_ACCOUNT);
       return false;
     }
-    // there was a piece of code RETURNING early if the safe address is not equal to the connected address
     return true;
   };
 
@@ -188,12 +197,9 @@ export const useRecoveryProcess = () => {
     setStepActive(RecoveryProcessStatus.SEND_BUNDLE);
     try {
       const finalBundle = await (
-        await fetch(
-          `https://rpc${targetNetwork.network == "goerli" ? "-goerli" : ""}.flashbots.net/bundle?id=${currentBundleId}`,
-          {
-            cache: "no-store",
-          },
-        )
+        await fetch(`${networkConfig.bundleCacheApiUrl}/bundle?id=${currentBundleId}`, {
+          cache: "no-store",
+        })
       ).json();
 
       if (!finalBundle || !finalBundle.rawTxs) {
@@ -213,10 +219,11 @@ export const useRecoveryProcess = () => {
         while (true) {
           const currentBlock = parseInt((await publicClient.getBlockNumber()).toString());
           setAttemptedBlock(currentBlock + 2);
-          const response = await fetch(currentUrl + `api/relay${targetNetwork.network == "goerli" ? "-goerli" : ""}`, {
+          const response = await fetch(currentUrl + `api/relay`, {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
+              "x-network-id": targetNetwork.id.toString(),
             },
             body: JSON.stringify({
               txs,
@@ -225,7 +232,6 @@ export const useRecoveryProcess = () => {
           });
 
           const parsedResponse = await response.json();
-          console.log("DEBUG", parsedResponse);
           // Success
           if (parsedResponse.success) {
             setStepActive(RecoveryProcessStatus.SUCCESS);
@@ -337,14 +343,13 @@ export const useRecoveryProcess = () => {
   };
 
   const startRecoveryProcess = async ({
-    safeAddress,
     currentBundleId,
     hackedAddress,
     transactions,
     modifyBundleId,
     setRpcParams,
   }: IStartProcessProps & IChangeRPCProps) => {
-    const isValid = validateBundleIsReady(safeAddress);
+    const isValid = validateBundleIsReady();
     if (!isValid) {
       return;
     }
@@ -379,15 +384,15 @@ export const useRecoveryProcess = () => {
   const addRelayRPC = async (bundleUuid: string) => {
     let result = null;
     const params = {
-      chainId: `0x${targetNetwork.network == "goerli" ? 5 : 1}`,
+      chainId: `0x${targetNetwork.network == "sepolia" ? "aa36a7" : "1"}`,
       chainName: "Hacked Wallet Recovery RPC",
       nativeCurrency: {
         name: "ETH",
         symbol: "ETH",
         decimals: 18,
       },
-      rpcUrls: [`https://rpc${targetNetwork.network == "goerli" ? "-goerli" : ""}.flashbots.net?bundle=${bundleUuid}`],
-      blockExplorerUrls: [`https://${targetNetwork.network == "goerli" ? "goerli." : ""}etherscan.io`],
+      rpcUrls: [`${networkConfig.bundleCacheApiUrl}?bundle=${bundleUuid}`],
+      blockExplorerUrls: [`${networkConfig.blockExplorerUrl}`],
     };
     if (!window.ethereum || !window.ethereum.request) {
       console.error("MetaMask Ethereum provider is not available");

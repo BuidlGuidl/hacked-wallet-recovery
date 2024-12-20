@@ -30,7 +30,7 @@ export const AutoDetectedAssetItem = ({ onClick, isSelected, tx, isLoading, imag
       subtitleContent = `Token IDs: ${tx.tokenIds.map(hexId => BigInt(hexId).toString()).join(", ")}`;
     } else if (tx.type === "erc20") {
       // @ts-ignore
-      const formattedAmount = formatUnits(tx.amount, tx.decimals);
+      const formattedAmount = formatUnits(BigInt(tx.amount), tx.decimals);
       subtitleContent = formattedAmount;
     } else if (tx.type === "custom") {
       subtitleContent = tx.info.split(" to ")[1];

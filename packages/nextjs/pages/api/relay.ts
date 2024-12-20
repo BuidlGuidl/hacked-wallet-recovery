@@ -5,16 +5,28 @@ import {
   SimulationResponse,
 } from "@flashbots/ethers-provider-bundle";
 import { ethers } from "ethers";
+import * as chains from "wagmi/chains";
+import { getNetworkConfig } from "~~/utils/scaffold-eth";
 
 export const maxDuration = 240;
-const mainnetProvider = new ethers.providers.InfuraProvider(1, "416f5398fa3d4bb389f18fd3fa5fb58c");
-const flashbotProvider = await FlashbotsBundleProvider.create(
-  mainnetProvider,
-  ethers.Wallet.createRandom(),
-  "https://relay.flashbots.net/",
-);
 
 export default async function handler(req: any, res: any) {
+  // Get network from request headers or query params
+  const networkId = req.headers["x-network-id"] || req.query.networkId;
+  const network = Number(networkId) === chains.sepolia.id ? chains.sepolia : chains.mainnet;
+  const networkConfig = getNetworkConfig(network);
+
+  const provider = new ethers.providers.JsonRpcProvider(
+    `${networkConfig.alchemyUrl}/${process.env.NEXT_PUBLIC_ALCHEMY_API_KEY}`,
+  );
+
+  const flashbotProvider = await FlashbotsBundleProvider.create(
+    provider,
+    ethers.Wallet.createRandom(),
+    networkConfig.relayUrl,
+    network.id === chains.sepolia.id ? "sepolia" : undefined,
+  );
+
   const body = req.body;
   if (!body || !body.txs || body.txs.length == 0) {
     res.status(400).json({ reason: "Bad bundle" });
@@ -24,7 +36,7 @@ export default async function handler(req: any, res: any) {
     return signedTx;
   });
 
-  const targetBlockNumber = (await mainnetProvider.getBlockNumber()) + 1;
+  const targetBlockNumber = (await provider.getBlockNumber()) + 1;
   const flashbotsTransactionResponse = await flashbotProvider.sendRawBundle(reformattedBundle, targetBlockNumber);
 
   // console.log(`@@@@@@ Bundle submitted targetting block#${targetBlockNumber}`);
