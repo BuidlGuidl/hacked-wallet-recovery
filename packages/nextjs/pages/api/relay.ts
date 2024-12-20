@@ -17,7 +17,7 @@ export default async function handler(req: any, res: any) {
   const networkConfig = getNetworkConfig(network);
 
   const provider = new ethers.providers.JsonRpcProvider(
-    `https://eth-sepolia.g.alchemy.com/v2/${process.env.NEXT_PUBLIC_ALCHEMY_API_KEY}`,
+    `${networkConfig.alchemyUrl}/${process.env.NEXT_PUBLIC_ALCHEMY_API_KEY}`,
   );
 
   const flashbotProvider = await FlashbotsBundleProvider.create(
