@@ -14,7 +14,8 @@
     "test:ui": "vitest --ui",
     "test:coverage": "vitest run --coverage",
     "vercel": "vercel",
-    "vercel:yolo": "vercel --build-env NEXT_PUBLIC_IGNORE_BUILD_ERROR=true"
+    "vercel:yolo": "vercel --build-env NEXT_PUBLIC_IGNORE_BUILD_ERROR=true",
+    "test:debug": "vitest --inspect-brk"
   },
   "dependencies": {
     "@ethersproject/providers": "^5.7.2",

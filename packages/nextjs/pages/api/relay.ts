@@ -30,6 +30,7 @@ export default async function handler(req: any, res: any) {
   const body = req.body;
   if (!body || !body.txs || body.txs.length == 0) {
     res.status(400).json({ reason: "Bad bundle" });
+    return;
   }
 
   const reformattedBundle: string[] = body.txs.map((signedTx: any) => {
