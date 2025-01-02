@@ -22,10 +22,10 @@ const scaffoldConfig = {
   // You can get your own at https://dashboard.alchemyapi.io
   // It's recommended to store it in an env variable:
   // .env.local for local testing, and in the Vercel/system env config for live apps.
-  alchemyApiKey: process.env.NEXT_PUBLIC_ALCHEMY_API_KEY || "oKxs-03sij-U_N0iOlrSsZFr29-IqbuF",
+  alchemyApiKey: process.env.NEXT_PUBLIC_ALCHEMY_API_KEY || "",
 
   // Extra Alchemy key for handling lower tier requests (blockheight, etc)
-  alchemyApiKey2: process.env.NEXT_PUBLIC_ALCHEMY_API_KEY_2 || "oKxs-03sij-U_N0iOlrSsZFr29-IqbuF",
+  alchemyApiKey2: process.env.NEXT_PUBLIC_ALCHEMY_API_KEY_2 || "",
 
   // This is ours WalletConnect's default project ID.
   // You can get your own at https://cloud.walletconnect.com
