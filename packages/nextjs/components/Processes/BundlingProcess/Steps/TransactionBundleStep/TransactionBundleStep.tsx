@@ -1,4 +1,4 @@
-import { Dispatch, SetStateAction, useEffect } from "react";
+import { Dispatch, SetStateAction, useCallback, useEffect } from "react";
 import Image from "next/image";
 import GasSvg from "../../../../../public/assets/flashbotRecovery/gas.svg";
 import styles from "./transactionBundleStep.module.css";
@@ -34,22 +34,17 @@ export const TransactionBundleStep = ({
 }: IProps) => {
   const { estimateTotalGasPrice } = useGasEstimation();
 
-  useEffect(() => {
-    if (transactions.length == 0) {
-      return;
-    }
-    estimateTotalGasPrice(transactions, removeUnsignedTx, modifyTransactions).then(setTotalGasEstimate);
-  }, [transactions.length]);
+  const updateGasEstimate = useCallback(async () => {
+    if (transactions.length === 0) return;
+    const estimate = await estimateTotalGasPrice(transactions, removeUnsignedTx, modifyTransactions);
+    setTotalGasEstimate(estimate);
+  }, [transactions, estimateTotalGasPrice, setTotalGasEstimate]);
 
-  useInterval(() => {
-    if (transactions.length == 0) {
-      return;
-    }
-    const updateTotalGasEstimate = async () => {
-      setTotalGasEstimate(await estimateTotalGasPrice(transactions, removeUnsignedTx, modifyTransactions));
-    };
-    updateTotalGasEstimate();
-  }, 5000);
+  useEffect(() => {
+    updateGasEstimate();
+  }, [updateGasEstimate]);
+
+  useInterval(updateGasEstimate, transactions.length > 0 ? 10000 : null);
 
   const removeUnsignedTx = (txId: number) => {
     modifyTransactions((prev: RecoveryTx[]) => {
