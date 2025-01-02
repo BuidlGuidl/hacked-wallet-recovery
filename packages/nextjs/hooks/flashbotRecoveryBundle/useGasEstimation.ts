@@ -39,9 +39,7 @@ export const useGasEstimation = () => {
       return lastBaseFee.current;
     }
 
-    const blockNumberNow = await publicClient.getBlockNumber();
-    console.log("@@@@@@ running api calls");
-    const block = await publicClient.getBlock({ blockNumber: blockNumberNow });
+    const block = await publicClient.getBlock();
     const maxBaseFee = FlashbotsBundleProvider.getMaxBaseFeeInFutureBlock(BigNumber.from(block.baseFeePerGas), 3);
 
     lastBaseFee.current = maxBaseFee;
