@@ -3,6 +3,7 @@ import dynamic from "next/dynamic";
 import { BigNumber } from "ethers";
 import { NextPage } from "next";
 import { useLocalStorage } from "usehooks-ts";
+import { parseEther } from "viem";
 import { useAccount, usePrepareSendTransaction, useSendTransaction } from "wagmi";
 import { CustomPortal } from "~~/components/CustomPortal/CustomPortal";
 import { MetaHeader } from "~~/components/MetaHeader";
@@ -15,7 +16,6 @@ import ErrorSvg from "~~/public/assets/flashbotRecovery/error.svg";
 import GasSvg from "~~/public/assets/flashbotRecovery/gas-illustration.svg";
 import { BundlingSteps, RecoveryProcessStatus } from "~~/types/enums";
 import { CONTRACT_ADDRESS } from "~~/utils/constants";
-import { parseEther } from "viem";
 
 interface IRPCParams {
   chainId: string;
@@ -39,6 +39,7 @@ const Home: NextPage = () => {
   const [currentBundleId, setCurrentBundleId] = useLocalStorage<string>("bundleUuid", "");
   const { error, resetError, isFinalProcessError } = useShowError();
   const [donationValue, setDonationValue] = useState<string>("");
+  const [show7702WarningModal, setShow7702WarningModal] = useState(true);
   const {
     data: processStatus,
     startRecoveryProcess,
@@ -151,10 +152,29 @@ const Home: NextPage = () => {
           alignItems: "center",
         }}
       >
-        <HackedAddressProcess isVisible={!hackedAddress} onSubmit={(hacked, safe) => {
-          setHackedAddress(hacked)
-          setSafeAddress(safe)
-        }} />
+        {show7702WarningModal && (
+          <CustomPortal
+            title="Hackers have been busy..."
+            description="After the Pectra upgrade, hackers have started using 7702 authorizations to instantly drain funds sent to leaked wallets. This tool will not be able to help recover assets in a wallet that has these authorizations. If you are a developer you could attempt to recover assets using <a href='https://github.com/pcaversaccio/white-hat-frontrunning'>a script</a>. Otherwise you will need to reach out to a <a href='https://github.com/security-alliance/seal-911'>whitehat hacker</a> to help you with a recovery."
+            buttons={[
+              {
+                text: "Ignore",
+                disabled: false,
+                isSecondary: true,
+                action: () => setShow7702WarningModal(false),
+              },
+            ]}
+            close={() => setShow7702WarningModal(false)}
+          />
+        )}
+
+        <HackedAddressProcess
+          isVisible={!hackedAddress}
+          onSubmit={(hacked, safe) => {
+            setHackedAddress(hacked);
+            setSafeAddress(safe);
+          }}
+        />
 
         <BundlingProcess
           isVisible={!!hackedAddress}
