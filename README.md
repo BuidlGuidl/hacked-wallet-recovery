@@ -1,3 +1,5 @@
+This is the old repository for the Hacked Wallet Recovery project. The new repository can be found here: https://github.com/BuidlGuidl/hacked-wallet-recovery-v2
+
 # Hacked Wallet Recovery 
 ## User friendly UI for building transaction bundles for Flashbots
 Use the tool here: [HackedWalletRecovery.com](https://hackedwalletrecovery.com/)
